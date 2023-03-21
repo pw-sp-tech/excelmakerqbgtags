@@ -228,7 +228,7 @@
     </div>
 </body>
 <script>
-       console.log("1")
+       console.log("2")
     let rows = 0;
     const row = document.querySelector('.row');
     const ground = document.querySelector('.ground')
@@ -361,9 +361,9 @@
     let fetchedData = {};
     fetchReq("https://qbg-backend-dev.penpencil.co/category-configuration").then(response => {
         console.log("request")
-        response.json().then(json => {
-            categories = json.data;
-            console.log(json.data)
+       
+            categories = res.data;
+            
             let html = `<option value="--select--" selected hidden>--select--</option>`;
             let html2 = `<option value="--select--" selected hidden>--Select Category--</option>`;
             categories.forEach(cat => {
@@ -375,7 +375,7 @@
                 el.innerHTML = html;
             });
             document.querySelector(".requestwindow").querySelector(".category").innerHTML = html2;
-        })
+       
     });
     function fetchSubjects(el) {
         saveState(el);
@@ -393,13 +393,13 @@
             return;
         }
         fetchReq(`https://qbg-backend-dev.penpencil.co/subjects/v2?category_id=${categoryId}`).then(res => {
-            res.json().then(json => {
+           
                 fetchedData[categoryId] = json.data
-                json.data.forEach(subject => {
+                res.data.forEach(subject => {
                     html += `<option value="${subject.english_name}" id="${subject.unique_id}">${subject.english_name}</option>`
                 });
                 select.innerHTML = html;
-            })
+           
         })
     }
     function fetchChapters(el) {
@@ -418,14 +418,14 @@
             return;
         }
         fetchReq(`https://qbg-backend-dev.penpencil.co/chapters/v2?subject_id=${subjectId}`).then(res => {
-            res.json().then(json => {
-                console.log(json.data)
+            
+               
                 fetchedData[subjectId] = json.data
-                json.data.forEach(ch => {
+                res.data.forEach(ch => {
                     html += `<option value="${ch.english_name}" id="${ch.unique_id}">${ch.english_name}</option>`
                 });
                 select.innerHTML = html;
-            })
+           
         })
     }
     function fetchTopics(el) {
@@ -445,14 +445,14 @@
             return;
         }
         fetchReq(`https://qbg-backend-dev.penpencil.co/topics/v2?chapter_id=${chapterId}`).then(res => {
-            res.json().then(json => {
-                console.log(json.data)
+           
+               
                 fetchedData[chapterId] = json.data
-                json.data.forEach(topic => {
+                res.data.forEach(topic => {
                     html += `<option value="${topic.english_name}" id="${topic.unique_id}">${topic.english_name}</option>`
                 });
                 select.innerHTML = html;
-            })
+           
         })
     }
     function fetchSubtopics(el) {
@@ -471,14 +471,14 @@
             return;
         }
         fetchReq(`https://qbg-backend-dev.penpencil.co/topics/v2?topic_id=${topicId}`).then(res => {
-            res.json().then(json => {
-                console.log(json.data)
+            
+               
                 fetchedData[topicId] = json.data
-                json.data.forEach(subtopic => {
+                res.forEach(subtopic => {
                     html += `<option value="${subtopic.english_name}" id="${subtopic.unique_id}">${subtopic.english_name}</option>`
                 });
                 select.innerHTML = html;
-            })
+           
         })
     }
 
@@ -561,18 +561,20 @@
         let id = document.querySelector(".requestwindow").querySelector(`.${parent}`).selectedOptions[0].id;
         let html = `<option value="--Select ${type}--" selected hidden>${placeholder}</option>`;
         fetchReq(`https://qbg-backend-dev.penpencil.co/${type}s/v2?${parent}_id=${id}`).then(res => {
-            res.json().then(json => {
-                json.data.forEach(el => {
+            
+                res.data.forEach(el => {
                     html += `<option value="${el.english_name}" id="${el.unique_id}">${el.english_name}</option>`
                 });
                 select.innerHTML = html;
-            })
+            
         })
     }
     function fetchReq(url) {
         return new Promise((resolve, reject) => {
             fetch(`http://localhost:8080/qbgtags?url=${encodeURI(url)}`).then(response => {
+           
                 response.json(json => {
+      
                     resolve(json)
                 })
             })
