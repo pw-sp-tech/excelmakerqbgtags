@@ -568,7 +568,7 @@
     }
     function fetchReq(url) {
         return new Promise((resolve, reject) => {
-            fetch(`http://localhost:8080/qbgtags?route=subjects&query=category_id&id=6jiq0fkiksyerc8wzuf17ciwt`).then(response => {
+            fetch(`http://localhost:8080/qbgtags?url=${encodeURI(url)}`).then(response => {
                 response.json(json => {
                     resolve(json)
                 })
