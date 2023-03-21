@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <base target="_top">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        button {
+            position: relative;
+            min-height: 30px;
+            min-width: 100px;
+            margin: 0 40px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            border-radius: 8px;
+            text-transform: uppercase;
+            border: 1px solid transparent;
+            outline: none;
+            cursor: pointer;
+            background: #0d0d0d;
+            overflow: hidden;
+            transition: 0.6s;
+            color: #ffffff;
+            border-color: #206592;
+            padding: 5px 10px;
+        }
+
+        button:before,
+        button:after {
+            position: absolute;
+            content: '';
+            left: 0;
+            top: 0;
+            height: 100%;
+            filter: blur(30px);
+            opacity: 0.4;
+            transition: 0.6s;
+        }
+
+        button:before {
+            width: 30px;
+            background: rgba(255, 255, 255, 0.6);
+            transform: translateX(-130px) skewX(-45deg);
+        }
+
+        button:after {
+            width: 15px;
+            background: rgba(255, 255, 255, 0.6);
+            transform: translateX(-130px) skewX(-45deg);
+        }
+
+        button:hover:before,
+        button:hover:after {
+            opacity: 0.6;
+            transform: translateX(320px) skewX(-45deg);
+        }
+
+        button:hover {
+            color: #f2f2f2;
+            background: #206592;
+        }
+
+
+
+        .row.hidden {
+            display: none;
+        }
+
+        .ground {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            position: relative;
+        }
+
+        .row {
+            width: fit-content;
+            min-width: 95%;
+            height: fit-content;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #0d0d0d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            border-radius: 10px;
+        }
+
+        .row-number {
+            color: #f2f2f2;
+            margin: 10px;
+        }
+
+        select {
+            margin: 10px;
+            min-width: 10%;
+            max-width: 200px;
+            padding: 5px 10px;
+            text-align: center;
+            border-radius: 8px;
+        }
+
+        .requestwindow {
+            background-color: rgb(80, 80, 80);
+            position: absolute;
+            width: 90%;
+            color: white;
+            text-align: center;
+            transform: translateY(100px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 10px 20px;
+            border-radius: 10px;
+            z-index: 999;
+        }
+
+        .request-window-header {
+            padding: 10px;
+            margin: 20px;
+            background-color: rgb(53, 53, 53);
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        input {
+            min-height: 20px;
+            padding: 5px 10px;
+            margin: 10px;
+            border-radius: 8px;
+            width: 300px;
+        }
+
+        .overlay {
+            width: 100vw;
+            height: 100vh;
+            background-color: #ffffff80;
+            position: absolute;
+            z-index: 99;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body style="margin: 0;padding: 0;background-color: rgb(53, 53, 53);">
+    <div class="overlay hidden"></div>
+    <div class="ground" style="min-width: 100vw;">
+        <div class="requestwindow hidden">
+            <span class="request-window-header">Request New Tag</span>
+            <div class="request-dropdowns">
+                <select name="" id="" class="request-type-value" onchange="requestTypeSelected(this)">
+                    <option value="" selected hidden>--Select Type--</option>
+                    <option value="category">Category</option>
+                    <option value="subject">Subject</option>
+                    <option value="chapter">Chapter</option>
+                    <option value="topic">Topic</option>
+                    <option value="subtopic">Subtopic</option>
+                </select>
+                <div class="inputs">
+                    <select name="" id="" class="category hidden" onchange="setRequestDropdown('subject')">
+                        <option value="" selected hidden>--Select Category--</option>
+                    </select>
+                    <select name="" id="" class="subject hidden" onchange="setRequestDropdown('chapter')">
+                        <option value="" selected hidden>--Select Subject--</option>
+                    </select>
+                    <select name="" id="" class="chapter hidden" onchange="setRequestDropdown('topic')">
+                        <option value="" selected hidden>--Select Chapter--</option>
+                    </select>
+                    <select name="" id="" class="topic hidden">
+                        <option value="" selected hidden>--Select Topic--</option>
+                    </select>
+                    <input type="text" placeholder="type a name" class="request-name-value hidden">
+                </div>
+
+                <button onclick="submitRequestedTags()">Submit</button>
+                <button onclick="closeRequestWindow()">Close</button>
+            </div>
+        </div>
+        <div class="header"
+            style="height: fit-content;padding: 10px;display: flex;align-items:flex-start;justify-content: flex-end;background-color: rgb(80, 80, 80);width: 95%;">
+            <button onclick="requestNewTag()">Request New Tag</button>
+            <button onclick="exportasexcel()">Export</button>
+            <button onclick="addrow()">+Add Row</button>
+        </div>
+        <div class="row hidden">
+            <span class="row-number">SN: 1</span>
+            <select name="" id="category" class="category-select" onchange="fetchSubjects(this)">
+                <option value="--select--" selected hidden>--select--</option>
+            </select>
+            <select name="" id="subject" class="subject-select" onchange="fetchChapters(this)">
+                <option value="--select--" selected hidden>--select--</option>
+
+            </select>
+            <select name="" id="chapter" class="chapter-select" onchange="fetchTopics(this)">
+                <option value="--select--" selected hidden>--select--</option>
+
+            </select>
+            <select name="" id="topic" class="topic-select" onchange="fetchSubtopics(this)">
+                <option value="--select--" selected hidden>--select--</option>
+
+            </select>
+            <select name="" id="subtopic" class="subtopic-select" onchange="saveState(this)">
+                <option value="--select--" selected hidden>--select--</option>
+
+            </select>
+            <button class="small delete-row-button">Delete Row</button>
+        </div>
+    </div>
+</body>
+<script>
+
+    let rows = 0;
+    const row = document.querySelector('.row');
+    const ground = document.querySelector('.ground')
+    function addrow(selectedValues) {
+        rows++;
+        let rowAll = document.querySelectorAll(".row");
+        console.log(rowAll.length)
+        let dataLastRow = [];
+        if (selectedValues) {
+            dataLastRow = selectedValues
+        } else {
+            rowAll[rowAll.length - 1].querySelectorAll("select").forEach(select => {
+                dataLastRow.push(select.selectedOptions[0].value);
+            });
+        }
+
+        // console.log(dataLastRow);
+        let newRow;
+        if (rowAll.length > 1) {
+            newRow = rowAll[rowAll.length - 1].cloneNode(true);
+        } else {
+            newRow = row.cloneNode(true);
+        }
+
+        ground.appendChild(newRow);
+        newRow.classList.remove('hidden');
+        newRow.classList.add('row-tagging');
+        newRow.querySelector(".row-number").innerHTML = `SN: ${rows}`;
+        newRow.setAttribute("number", rows)
+        newRow.querySelector(".delete-row-button").setAttribute("onclick", `deleteRow(${rows})`);
+        let count = -1;
+        newRow.querySelectorAll("select").forEach(select => {
+            count++;
+            if (dataLastRow[count] != "--select--") {
+                select.value = dataLastRow[count];
+            }
+        })
+    }
+    let data = [["subject", "chapter", "topic", "subtopic"]];
+    function exportasexcel() {
+        let dataObject = getDataAsObject(true, true);
+        dataObject.forEach(row => {
+            data.push(row)
+        })
+        var workbook = XLSX.utils.book_new(),
+            worksheet = XLSX.utils.aoa_to_sheet(data);
+        workbook.SheetNames.push("Sheet1");
+        workbook.Sheets["Sheet1"] = worksheet;
+        XLSX.writeFile(workbook, "tagging.xlsx");
+    }
+    function deleteRow(rowNumber) {
+        // console.log(rowNumber)
+        document.querySelector(`.row[number="${rowNumber}"]`).remove();
+        rows--;
+        let count = 0;
+        document.querySelectorAll('.row-tagging').forEach(el => {
+            count++;
+            el.setAttribute("number", `${count}`);
+            el.querySelector('.delete-row-button').setAttribute("onclick", `deleteRow(${count})`);
+            el.querySelector(".row-number").innerHTML = `SN: ${count}`;
+        });
+        saveState()
+    }
+    function fill() {
+        document.querySelectorAll("select").forEach(select => {
+            let random = Math.floor(Math.random() * 2) + 1
+            select.value = select.querySelectorAll("option")[random].value
+        })
+
+    }
+    function saveState() {
+        return;
+        localStorage.setItem('data', JSON.stringify(getDataAsObject()))
+    }
+    function getDataAsObject(excludeCategory, id) {
+        let data = []
+        const allrows = document.querySelectorAll(".row-tagging");
+        allrows.forEach(row => {
+            let rowData = [];
+            row.querySelectorAll("select").forEach(select => {
+                if (select.classList.contains("category-select") && excludeCategory) {
+                    return;
+                }
+                let selectedOption = id ? select.selectedOptions[0].id : select.selectedOptions[0].value;
+                rowData.push(selectedOption)
+
+            });
+            data.push(rowData)
+        });
+        // console.log(data)
+        return data;
+    }
+
+    function getState() {
+        let data = JSON.parse(localStorage.getItem('data'));
+        data.forEach(row => {
+            addrow(row);
+        })
+    }
+    // getState();
+    function requestNewTag() {
+        window.open(
+            'https://support.wwf.org.uk/earth_hour/index.php?type=individual',
+            '_blank' // <- This is what makes it open in a new window.
+        );
+    }
+    const overlay = document.querySelector(".overlay");
+    const requestWindow = document.querySelector(".requestwindow");
+    const requestTypeEl = document.querySelector(".request-type-value");
+    const requestNameEl = document.querySelector(".request-name-value");
+    function requestNewTag() {
+        overlay.classList.remove("hidden")
+        requestWindow.classList.remove("hidden")
+    }
+    function closeRequestWindow() {
+        overlay.classList.add("hidden")
+        requestWindow.classList.add("hidden")
+    }
+    function submitRequestedTags() {
+        let type = requestTypeEl.selectedOptions[0].value;
+        let dropdownValues = [];
+        document.querySelector(".requestwindow").querySelector(".inputs").querySelectorAll("select").forEach(select => {
+            dropdownValues.push([select.selectedOptions[0].id, select.selectedOptions[0].value])
+        })
+        let name = requestNameEl.value;
+        google.script.run.withSuccessHandler(response => {
+            window.alert(response)
+        }).submitRequestedTagsFn(type, name, dropdownValues)
+    }
+    let fetchedData = {};
+    fetchReq("https://qbg-backend-dev.penpencil.co/category-configuration").then(response => {
+        response.json().then(json => {
+            categories = json.data;
+            let html = `<option value="--select--" selected hidden>--select--</option>`;
+            let html2 = `<option value="--select--" selected hidden>--Select Category--</option>`;
+            categories.forEach(cat => {
+                html += `<option value="${cat.name}" id="${cat.unique_id}">${cat.name}</option>`;
+                html2 += `<option value="${cat.name}" id="${cat.unique_id}">${cat.name}</option>`;
+            });
+            document.querySelectorAll(".category-select").forEach(el => {
+                el.innerHTML = html;
+            });
+            document.querySelector(".requestwindow").querySelector(".category").innerHTML = html2;
+        })
+    });
+    function fetchSubjects(el) {
+        saveState(el);
+        let rowNumber = el.parentElement.getAttribute('number');
+        let categoryId = el.selectedOptions[0].id;
+        let select = document.querySelector(`.row[number="${rowNumber}"]`).querySelector(".subject-select");
+        resetDropdowns(rowNumber, ["subject", "chapter", "topic", "subtopic"])
+        console.log(select)
+        let html = `<option value="--select--" selected hidden>--select--</option>`;
+        if (fetchedData[categoryId]) {
+            fetchedData[categoryId].forEach(el => {
+                html += `<option value="${el.english_name}" id="${el.unique_id}">${el.english_name}</option>`
+            });
+            select.innerHTML = html;
+            return;
+        }
+        fetchReq(`https://qbg-backend-dev.penpencil.co/subjects/v2?category_id=${categoryId}`).then(res => {
+            res.json().then(json => {
+                fetchedData[categoryId] = json.data
+                json.data.forEach(subject => {
+                    html += `<option value="${subject.english_name}" id="${subject.unique_id}">${subject.english_name}</option>`
+                });
+                select.innerHTML = html;
+            })
+        })
+    }
+    function fetchChapters(el) {
+        saveState(el);
+        let rowNumber = el.parentElement.getAttribute('number');
+        let subjectId = el.selectedOptions[0].id;
+        let select = document.querySelector(`.row[number="${rowNumber}"]`).querySelector(".chapter-select");
+        resetDropdowns(rowNumber, ["chapter", "topic", "subtopic"])
+        console.log(select)
+        let html = `<option value="--select--" selected hidden>--select--</option>`;
+        if (fetchedData[subjectId]) {
+            fetchedData[subjectId].forEach(el => {
+                html += `<option value="${el.english_name}" id="${el.unique_id}">${el.english_name}</option>`
+            });
+            select.innerHTML = html;
+            return;
+        }
+        fetchReq(`https://qbg-backend-dev.penpencil.co/chapters/v2?subject_id=${subjectId}`).then(res => {
+            res.json().then(json => {
+                console.log(json.data)
+                fetchedData[subjectId] = json.data
+                json.data.forEach(ch => {
+                    html += `<option value="${ch.english_name}" id="${ch.unique_id}">${ch.english_name}</option>`
+                });
+                select.innerHTML = html;
+            })
+        })
+    }
+    function fetchTopics(el) {
+        saveState(el);
+        let rowNumber = el.parentElement.getAttribute('number');
+        let chapterId = el.selectedOptions[0].id;
+        let select = document.querySelector(`.row[number="${rowNumber}"]`).querySelector(".topic-select");
+        console.log(select)
+        resetDropdowns(rowNumber, ["topic", "subtopic"])
+
+        let html = `<option value="--select--" selected hidden>--select--</option>`;
+        if (fetchedData[chapterId]) {
+            fetchedData[chapterId].forEach(el => {
+                html += `<option value="${el.english_name}" id="${el.unique_id}">${el.english_name}</option>`
+            });
+            select.innerHTML = html;
+            return;
+        }
+        fetchReq(`https://qbg-backend-dev.penpencil.co/topics/v2?chapter_id=${chapterId}`).then(res => {
+            res.json().then(json => {
+                console.log(json.data)
+                fetchedData[chapterId] = json.data
+                json.data.forEach(topic => {
+                    html += `<option value="${topic.english_name}" id="${topic.unique_id}">${topic.english_name}</option>`
+                });
+                select.innerHTML = html;
+            })
+        })
+    }
+    function fetchSubtopics(el) {
+        saveState(el);
+        let rowNumber = el.parentElement.getAttribute('number');
+        let topicId = el.selectedOptions[0].id;
+        let select = document.querySelector(`.row[number="${rowNumber}"]`).querySelector(".subtopic-select");
+        console.log(select)
+        resetDropdowns(rowNumber, ["subtopic"])
+        let html = `<option value="--select--" selected hidden>--select--</option>`;
+        if (fetchedData[topicId]) {
+            fetchedData[topicId].forEach(subtopic => {
+                html += `<option value="${subtopic.english_name}" id="${subtopic.unique_id}">${subtopic.english_name}</option>`
+            });
+            select.innerHTML = html;
+            return;
+        }
+        fetchReq(`https://qbg-backend-dev.penpencil.co/topics/v2?topic_id=${topicId}`).then(res => {
+            res.json().then(json => {
+                console.log(json.data)
+                fetchedData[topicId] = json.data
+                json.data.forEach(subtopic => {
+                    html += `<option value="${subtopic.english_name}" id="${subtopic.unique_id}">${subtopic.english_name}</option>`
+                });
+                select.innerHTML = html;
+            })
+        })
+    }
+
+    function resetDropdowns(rowNumber, arr) {
+        console.log(rowNumber, arr)
+        let row = document.querySelector(`.row[number="${rowNumber}"]`);
+        if (arr.includes("subject")) {
+            row.querySelector(".subject-select").innerHTML = `<option value="--select--" selected hidden>--select--</option>`
+        }
+        if (arr.includes("chapter")) {
+            console.log(row.querySelector(".chapter-select"))
+            row.querySelector(".chapter-select").innerHTML = `<option value="--select--" selected hidden>--select--</option>`
+        }
+        if (arr.includes("topic")) {
+            console.log(row.querySelector(".topic-select"))
+            row.querySelector(".topic-select").innerHTML = `<option value="--select--" selected hidden>--select--</option>`
+        }
+        if (arr.includes("subtopic")) {
+            console.log(row.querySelector(".subtopic-select"))
+
+            row.querySelector(".subtopic-select").innerHTML = `<option value="--select--" selected hidden>--select--</option>`
+        }
+    }
+    window.onbeforeunload = function () {
+        return "Data will be lost if you refresh the page, are you sure?";
+    };
+
+    function requestTypeSelected(el) {
+        let type = el.selectedOptions[0].value;
+        let inputs = document.querySelector(".requestwindow").querySelector(".inputs")
+        let nameInput = inputs.querySelector("input");
+        nameInput.classList.remove("hidden")
+        if (type == "subject") {
+            inputs.querySelector(".category").classList.remove("hidden");
+            nameInput.setAttribute("placeholder", "type new subject name")
+        }
+        else if (type == "chapter") {
+            inputs.querySelector(".category").classList.remove("hidden");
+            inputs.querySelector(".subject").classList.remove("hidden");
+            nameInput.setAttribute("placeholder", "type new chapter name")
+
+        }
+        else if (type == "topic") {
+            inputs.querySelector(".category").classList.remove("hidden");
+            inputs.querySelector(".subject").classList.remove("hidden");
+            inputs.querySelector(".chapter").classList.remove("hidden");
+            nameInput.setAttribute("placeholder", "type new topic name")
+
+        }
+        else if (type == "subtopic") {
+            inputs.querySelector(".category").classList.remove("hidden");
+            inputs.querySelector(".subject").classList.remove("hidden");
+            inputs.querySelector(".chapter").classList.remove("hidden");
+            inputs.querySelector(".topic").classList.remove("hidden");
+            nameInput.setAttribute("placeholder", "type new subtopic name")
+
+        } else {
+            nameInput.setAttribute("placeholder", "type new category name")
+
+        }
+    }
+
+    function setRequestDropdown(type) {
+        console.log(type)
+        let select = document.querySelector(".requestwindow").querySelector(`.${type}`);
+
+        let parent, placeholder;
+        if (type == 'subject') {
+            parent = 'category';
+            placeholder = `--Select Subject--`
+        }
+        else if (type == "chapter") {
+            parent = 'subject'
+            placeholder = `--Select Chapter--`
+        }
+        else if (type == "topic") {
+            parent = 'chapter'
+            placeholder = `--Select Topic--`
+        }
+        let id = document.querySelector(".requestwindow").querySelector(`.${parent}`).selectedOptions[0].id;
+        let html = `<option value="--Select ${type}--" selected hidden>${placeholder}</option>`;
+        fetchReq(`https://qbg-backend-dev.penpencil.co/${type}s/v2?${parent}_id=${id}`).then(res => {
+            res.json().then(json => {
+                json.data.forEach(el => {
+                    html += `<option value="${el.english_name}" id="${el.unique_id}">${el.english_name}</option>`
+                });
+                select.innerHTML = html;
+            })
+        })
+    }
+    function fetchReq(url) {
+        return new Promise((resolve, reject) => {
+            fetch(`http://localhost:8080/qbgtags?route=subjects&query=category_id&id=6jiq0fkiksyerc8wzuf17ciwt`).then(response => {
+                response.json(json => {
+                    resolve(json)
+                })
+            })
+        })
+    }
+</script>
+
+</html>
