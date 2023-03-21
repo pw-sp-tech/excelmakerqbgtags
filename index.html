@@ -168,6 +168,8 @@
         <div class="requestwindow hidden">
             <span class="request-window-header">Request New Tag</span>
             <div class="request-dropdowns">
+                <input type="text" placeholder="type your name" class="request-owner-value">
+                <input type="text" placeholder="type your mail address" class="request-email-value">
                 <select name="" id="" class="request-type-value" onchange="requestTypeSelected(this)">
                     <option value="" selected hidden>--Select Type--</option>
                     <option value="category">Category</option>
@@ -177,6 +179,7 @@
                     <option value="subtopic">Subtopic</option>
                 </select>
                 <div class="inputs">
+
                     <select name="" id="" class="category hidden" onchange="setRequestDropdown('subject')">
                         <option value="" selected hidden>--Select Category--</option>
                     </select>
@@ -190,9 +193,10 @@
                         <option value="" selected hidden>--Select Topic--</option>
                     </select>
                     <input type="text" placeholder="type a name" class="request-name-value hidden">
+
                 </div>
 
-                <button onclick="submitRequestedTags()">Submit</button>
+                <button onclick="submitRequestedTags(this)">Submit</button>
                 <button onclick="closeRequestWindow()">Close</button>
             </div>
         </div>
@@ -239,7 +243,7 @@
             })
         })
     }
-    console.log("3")
+    console.log("5")
     let rows = 0;
     const row = document.querySelector('.row');
     const ground = document.querySelector('.ground')
@@ -350,6 +354,8 @@
     const requestWindow = document.querySelector(".requestwindow");
     const requestTypeEl = document.querySelector(".request-type-value");
     const requestNameEl = document.querySelector(".request-name-value");
+    const requestOwnerEl = document.querySelector(".request-owner-value");
+    const requestEmailEl = document.querySelector(".request-email-value");
     function requestNewTag() {
         overlay.classList.remove("hidden")
         requestWindow.classList.remove("hidden")
@@ -358,16 +364,33 @@
         overlay.classList.add("hidden")
         requestWindow.classList.add("hidden")
     }
-    function submitRequestedTags() {
-        //         let type = requestTypeEl.selectedOptions[0].value;
-        //         let dropdownValues = [];
-        //         document.querySelector(".requestwindow").querySelector(".inputs").querySelectorAll("select").forEach(select => {
-        //             dropdownValues.push([select.selectedOptions[0].id, select.selectedOptions[0].value])
-        //         })
-        //         let name = requestNameEl.value;
-        //         google.script.run.withSuccessHandler(response => {
-        //             window.alert(response)
-        //         }).submitRequestedTagsFn(type, name, dropdownValues)
+    function submitRequestedTags(el) {
+
+        let type = requestTypeEl.selectedOptions[0].value;
+        let owner = requestOwnerEl.value;
+        let email = requestEmailEl.value;
+        if (!owner || !email) {
+            window.alert("Please fill all inputs");
+            return;
+        }
+        el.innerHTML = `Submitting...`
+        let dropdownValues = [];
+        document.querySelector(".requestwindow").querySelector(".inputs").querySelectorAll("select").forEach(select => {
+            dropdownValues.push([select.selectedOptions[0].id, select.selectedOptions[0].value])
+        })
+        let name = requestNameEl.value;
+        fetch(`http://localhost:8080/qbgtags/submitrequest`, {
+            headers: {
+                "content-type": "application/json"
+            },
+            method: "POST",
+            body: JSON.stringify([type, name, owner, email, dropdownValues])
+        }).then(res => {
+            res.json().then(json => {
+                el.innerHTML = `Submit`;
+                closeRequestWindow()
+            })
+        })
     }
     let fetchedData = {};
     fetchReq("https://qbg-backend-dev.penpencil.co/category-configuration").then(response => {
@@ -405,7 +428,7 @@
         }
         fetchReq(`https://qbg-backend-dev.penpencil.co/subjects/v2?category_id=${categoryId}`).then(res => {
 
-            fetchedData[categoryId] = json.data
+            fetchedData[categoryId] = res.data
             res.data.forEach(subject => {
                 html += `<option value="${subject.english_name}" id="${subject.unique_id}">${subject.english_name}</option>`
             });
@@ -431,7 +454,7 @@
         fetchReq(`https://qbg-backend-dev.penpencil.co/chapters/v2?subject_id=${subjectId}`).then(res => {
 
 
-            fetchedData[subjectId] = json.data
+            fetchedData[subjectId] = res.data
             res.data.forEach(ch => {
                 html += `<option value="${ch.english_name}" id="${ch.unique_id}">${ch.english_name}</option>`
             });
@@ -458,7 +481,7 @@
         fetchReq(`https://qbg-backend-dev.penpencil.co/topics/v2?chapter_id=${chapterId}`).then(res => {
 
 
-            fetchedData[chapterId] = json.data
+            fetchedData[chapterId] = res.data
             res.data.forEach(topic => {
                 html += `<option value="${topic.english_name}" id="${topic.unique_id}">${topic.english_name}</option>`
             });
@@ -484,8 +507,8 @@
         fetchReq(`https://qbg-backend-dev.penpencil.co/topics/v2?topic_id=${topicId}`).then(res => {
 
 
-            fetchedData[topicId] = json.data
-            res.forEach(subtopic => {
+            fetchedData[topicId] = res.data
+            res.data.forEach(subtopic => {
                 html += `<option value="${subtopic.english_name}" id="${subtopic.unique_id}">${subtopic.english_name}</option>`
             });
             select.innerHTML = html;
