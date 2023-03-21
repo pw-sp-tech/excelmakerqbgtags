@@ -348,15 +348,15 @@
         requestWindow.classList.add("hidden")
     }
     function submitRequestedTags() {
-        let type = requestTypeEl.selectedOptions[0].value;
-        let dropdownValues = [];
-        document.querySelector(".requestwindow").querySelector(".inputs").querySelectorAll("select").forEach(select => {
-            dropdownValues.push([select.selectedOptions[0].id, select.selectedOptions[0].value])
-        })
-        let name = requestNameEl.value;
-        google.script.run.withSuccessHandler(response => {
-            window.alert(response)
-        }).submitRequestedTagsFn(type, name, dropdownValues)
+//         let type = requestTypeEl.selectedOptions[0].value;
+//         let dropdownValues = [];
+//         document.querySelector(".requestwindow").querySelector(".inputs").querySelectorAll("select").forEach(select => {
+//             dropdownValues.push([select.selectedOptions[0].id, select.selectedOptions[0].value])
+//         })
+//         let name = requestNameEl.value;
+//         google.script.run.withSuccessHandler(response => {
+//             window.alert(response)
+//         }).submitRequestedTagsFn(type, name, dropdownValues)
     }
     let fetchedData = {};
     fetchReq("https://qbg-backend-dev.penpencil.co/category-configuration").then(response => {
