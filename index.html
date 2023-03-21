@@ -228,7 +228,7 @@
     </div>
 </body>
 <script>
-
+       console.log("1")
     let rows = 0;
     const row = document.querySelector('.row');
     const ground = document.querySelector('.ground')
@@ -360,8 +360,10 @@
     }
     let fetchedData = {};
     fetchReq("https://qbg-backend-dev.penpencil.co/category-configuration").then(response => {
+        console.log("request")
         response.json().then(json => {
             categories = json.data;
+            console.log(json.data)
             let html = `<option value="--select--" selected hidden>--select--</option>`;
             let html2 = `<option value="--select--" selected hidden>--Select Category--</option>`;
             categories.forEach(cat => {
