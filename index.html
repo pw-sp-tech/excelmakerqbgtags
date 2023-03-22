@@ -388,7 +388,7 @@
         })
     }
     let fetchedData = {};
-    fetchReq("https://qbg-backend-dev.penpencil.co/category-configuration").then(response => {
+    fetchReq("https://qbg-api.penpencil.co/category-configuration").then(response => {
 
         categories = response.data;
 
@@ -418,7 +418,7 @@
             select.innerHTML = html;
             return;
         }
-        fetchReq(`https://qbg-backend-dev.penpencil.co/subjects/v2?category_id=${categoryId}`).then(res => {
+        fetchReq(`https://qbg-api.penpencil.co/subjects/v2?category_id=${categoryId}`).then(res => {
 
             fetchedData[categoryId] = res.data
             res.data.forEach(subject => {
@@ -442,7 +442,7 @@
             select.innerHTML = html;
             return;
         }
-        fetchReq(`https://qbg-backend-dev.penpencil.co/chapters/v2?subject_id=${subjectId}`).then(res => {
+        fetchReq(`https://qbg-api.penpencil.co/chapters/v2?subject_id=${subjectId}`).then(res => {
 
 
             fetchedData[subjectId] = res.data
@@ -468,7 +468,7 @@
             select.innerHTML = html;
             return;
         }
-        fetchReq(`https://qbg-backend-dev.penpencil.co/topics/v2?chapter_id=${chapterId}`).then(res => {
+        fetchReq(`https://qbg-api.penpencil.co/topics/v2?chapter_id=${chapterId}`).then(res => {
 
 
             fetchedData[chapterId] = res.data
@@ -493,7 +493,7 @@
             select.innerHTML = html;
             return;
         }
-        fetchReq(`https://qbg-backend-dev.penpencil.co/topics/v2?topic_id=${topicId}`).then(res => {
+        fetchReq(`https://qbg-api.penpencil.co/topics/v2?topic_id=${topicId}`).then(res => {
 
 
             fetchedData[topicId] = res.data
@@ -578,7 +578,7 @@
         }
         let id = document.querySelector(".requestwindow").querySelector(`.${parent}`).selectedOptions[0].id;
         let html = `<option value="--Select ${type}--" selected hidden>${placeholder}</option>`;
-        fetchReq(`https://qbg-backend-dev.penpencil.co/${type}s/v2?${parent}_id=${id}`).then(res => {
+        fetchReq(`https://qbg-api.penpencil.co/${type}s/v2?${parent}_id=${id}`).then(res => {
 
             res.data.forEach(el => {
                 html += `<option value="${el.english_name}" id="${el.unique_id}">${el.english_name}</option>`
