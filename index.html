@@ -234,7 +234,7 @@
 <script>
     function fetchReq(url) {
         return new Promise((resolve, reject) => {
-            fetch(`http://localhost:8080/qbgtags?url=${encodeURI(url)}`).then(response => {
+            fetch(`https://www.api-pw-internal-utilities.in/qbgtags?url=${encodeURI(url)}`).then(response => {
 
                 response.json().then(json => {
 
@@ -243,14 +243,12 @@
             })
         })
     }
-    console.log("5")
     let rows = 0;
     const row = document.querySelector('.row');
     const ground = document.querySelector('.ground')
     function addrow(selectedValues) {
         rows++;
         let rowAll = document.querySelectorAll(".row");
-        console.log(rowAll.length)
         let dataLastRow = [];
         if (selectedValues) {
             dataLastRow = selectedValues
@@ -260,7 +258,6 @@
             });
         }
 
-        // console.log(dataLastRow);
         let newRow;
         if (rowAll.length > 1) {
             newRow = rowAll[rowAll.length - 1].cloneNode(true);
@@ -295,7 +292,6 @@
         XLSX.writeFile(workbook, "tagging.xlsx");
     }
     function deleteRow(rowNumber) {
-        // console.log(rowNumber)
         document.querySelector(`.row[number="${rowNumber}"]`).remove();
         rows--;
         let count = 0;
@@ -333,7 +329,6 @@
             });
             data.push(rowData)
         });
-        // console.log(data)
         return data;
     }
 
@@ -379,7 +374,7 @@
             dropdownValues.push([select.selectedOptions[0].id, select.selectedOptions[0].value])
         })
         let name = requestNameEl.value;
-        fetch(`http://localhost:8080/qbgtags/submitrequest`, {
+        fetch(`https://www.api-pw-internal-utilities.in/qbgtags/submitrequest`, {
             headers: {
                 "content-type": "application/json"
             },
@@ -394,7 +389,6 @@
     }
     let fetchedData = {};
     fetchReq("https://qbg-backend-dev.penpencil.co/category-configuration").then(response => {
-        console.log("request")
 
         categories = response.data;
 
@@ -404,7 +398,6 @@
             html += `<option value="${cat.name}" id="${cat.unique_id}">${cat.name}</option>`;
             html2 += `<option value="${cat.name}" id="${cat.unique_id}">${cat.name}</option>`;
         });
-        console.log(html)
         document.querySelectorAll(".category-select").forEach(el => {
             el.innerHTML = html;
         });
@@ -417,7 +410,6 @@
         let categoryId = el.selectedOptions[0].id;
         let select = document.querySelector(`.row[number="${rowNumber}"]`).querySelector(".subject-select");
         resetDropdowns(rowNumber, ["subject", "chapter", "topic", "subtopic"])
-        console.log(select)
         let html = `<option value="--select--" selected hidden>--select--</option>`;
         if (fetchedData[categoryId]) {
             fetchedData[categoryId].forEach(el => {
@@ -442,7 +434,6 @@
         let subjectId = el.selectedOptions[0].id;
         let select = document.querySelector(`.row[number="${rowNumber}"]`).querySelector(".chapter-select");
         resetDropdowns(rowNumber, ["chapter", "topic", "subtopic"])
-        console.log(select)
         let html = `<option value="--select--" selected hidden>--select--</option>`;
         if (fetchedData[subjectId]) {
             fetchedData[subjectId].forEach(el => {
@@ -467,7 +458,6 @@
         let rowNumber = el.parentElement.getAttribute('number');
         let chapterId = el.selectedOptions[0].id;
         let select = document.querySelector(`.row[number="${rowNumber}"]`).querySelector(".topic-select");
-        console.log(select)
         resetDropdowns(rowNumber, ["topic", "subtopic"])
 
         let html = `<option value="--select--" selected hidden>--select--</option>`;
@@ -494,7 +484,6 @@
         let rowNumber = el.parentElement.getAttribute('number');
         let topicId = el.selectedOptions[0].id;
         let select = document.querySelector(`.row[number="${rowNumber}"]`).querySelector(".subtopic-select");
-        console.log(select)
         resetDropdowns(rowNumber, ["subtopic"])
         let html = `<option value="--select--" selected hidden>--select--</option>`;
         if (fetchedData[topicId]) {
@@ -517,21 +506,17 @@
     }
 
     function resetDropdowns(rowNumber, arr) {
-        console.log(rowNumber, arr)
         let row = document.querySelector(`.row[number="${rowNumber}"]`);
         if (arr.includes("subject")) {
             row.querySelector(".subject-select").innerHTML = `<option value="--select--" selected hidden>--select--</option>`
         }
         if (arr.includes("chapter")) {
-            console.log(row.querySelector(".chapter-select"))
             row.querySelector(".chapter-select").innerHTML = `<option value="--select--" selected hidden>--select--</option>`
         }
         if (arr.includes("topic")) {
-            console.log(row.querySelector(".topic-select"))
             row.querySelector(".topic-select").innerHTML = `<option value="--select--" selected hidden>--select--</option>`
         }
         if (arr.includes("subtopic")) {
-            console.log(row.querySelector(".subtopic-select"))
 
             row.querySelector(".subtopic-select").innerHTML = `<option value="--select--" selected hidden>--select--</option>`
         }
@@ -576,7 +561,6 @@
     }
 
     function setRequestDropdown(type) {
-        console.log(type)
         let select = document.querySelector(".requestwindow").querySelector(`.${type}`);
 
         let parent, placeholder;
