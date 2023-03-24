@@ -557,8 +557,10 @@
         }
         fetchReq(`${qbgBaseURL}/subjects/v2?category_id=${categoryId}`).then(res => {
 
-            fetchedData[categoryId] = res.data
-            res.data.forEach(subject => {
+            fetchedData[categoryId] = res.data;
+            let subjects = res.data;
+            subjects.sort(compare);
+            subjects.forEach(subject => {
                 html += `<option value="${subject.english_name}" id="${subject.unique_id}">${subject.english_name}</option>`
             });
             select.innerHTML = html;
@@ -583,8 +585,10 @@
         fetchReq(`${qbgBaseURL}/chapters/v2?subject_id=${subjectId}`).then(res => {
 
 
-            fetchedData[subjectId] = res.data
-            res.data.forEach(ch => {
+            fetchedData[subjectId] = res.data;
+            let chapters = res.data;
+            chapters.sort(compare);
+            chapters.forEach(ch => {
                 html += `<option value="${ch.english_name}" id="${ch.unique_id}">${ch.english_name}</option>`
             });
             select.innerHTML = html;
@@ -610,8 +614,10 @@
         fetchReq(`${qbgBaseURL}/topics/v2?chapter_id=${chapterId}`).then(res => {
 
 
-            fetchedData[chapterId] = res.data
-            res.data.forEach(topic => {
+            fetchedData[chapterId] = res.data;
+            let topics = res.data;
+            topics.sort(compare);
+            topics.forEach(topic => {
                 html += `<option value="${topic.english_name}" id="${topic.unique_id}">${topic.english_name}</option>`
             });
             select.innerHTML = html;
@@ -636,8 +642,10 @@
         fetchReq(`${qbgBaseURL}/subtopics/v2?topic_id=${topicId}`).then(res => {
 
 
-            fetchedData[topicId] = res.data
-            res.data.forEach(subtopic => {
+            fetchedData[topicId] = res.data;
+            let subtopics = res.data;
+            subtopics.sort(compare);
+            subtopics.forEach(subtopic => {
                 html += `<option value="${subtopic.english_name}" id="${subtopic.unique_id}">${subtopic.english_name}</option>`
             });
             select.innerHTML = html;
@@ -769,7 +777,8 @@
             })
         })
     }
-    let compare = (a, b) => (a.status ? 1 : 0 > b.status ? 1 : 0) ? 1 : ((b.status ? 1 : 0 > a.status ? 1 : 0) ? -1 : 0)
+    let compare2 = (a, b) => (a.status ? 1 : 0 > b.status ? 1 : 0) ? 1 : ((b.status ? 1 : 0 > a.status ? 1 : 0) ? -1 : 0);
+    let compare = (a, b) => (a.english_name.charCodeAt(0) > b.english_name.charCodeAt(0)) ? 1 : ((b.english_name.charCodeAt(0) > a.english_name.charCodeAt(0)) ? -1 : 0);
     function renderRequests() {
         let approved = 0, rejected = 0, pending = 0
         document.querySelectorAll(".request-row-visible").forEach(el => {
@@ -778,7 +787,7 @@
         document.querySelectorAll(".row-tagging").forEach(el => {
             el.remove()
         });
-        requests.sort(compare)
+        requests.sort(compare2)
         requests.forEach(el => {
             let keys = Object.keys(el);
             keys.forEach(key => {
