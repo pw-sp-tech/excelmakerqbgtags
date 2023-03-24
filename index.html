@@ -93,13 +93,13 @@
             min-width: 95%;
             height: fit-content;
             margin-top: 10px;
-            padding: 10px;
+            padding: 20px 10px;
             background-color: #0d0d0d;
             display: flex;
             justify-content: center;
             align-items: center;
             flex-wrap: wrap;
-            border-radius: 10px;
+            border-radius: 50px;
         }
 
         .request-row {
@@ -218,10 +218,34 @@
 
         button.request-approved {
             color: green;
+            pointer-events: none;
+            opacity: 0.5;
         }
 
         button.request-rejected {
             color: red;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .request-row.acted {
+            opacity: 0.5;
+        }
+
+        .request-row.acted span {
+            font-size: 11px;
+        }
+
+        .select-label {
+            color: white;
+            font-size: 12px;
+            position: absolute;
+            transform: translate(10px, -10px);
+        }
+
+        .request-count {
+            color: white;
+            font-size: 20px;
         }
     </style>
 </head>
@@ -274,7 +298,8 @@
             </div>
         </div>
         <div class="header"
-            style="height: fit-content;padding: 10px;display: flex;align-items:flex-start;justify-content: flex-end;background-color: rgb(80, 80, 80);width: 95%;">
+            style="height: fit-content;padding: 10px;display: flex;align-items:flex-start;justify-content: flex-end;background-color: rgb(80, 80, 80);width: 95%;border-radius: 50px;">
+            <span class="request-count hidden">15</span>
             <button class="login-button" onclick="adminLogin()">Admin Login</button>
             <button class="logout-button hidden" onclick="logout()">Log out</button>
             <button class="request-tag-button non-admin-button" onclick="requestNewTag()">Request New Tag</button>
@@ -283,37 +308,56 @@
         </div>
         <div class="row hidden">
             <span class="row-number">SN: 1</span>
-            <select name="" id="category" class="category-select" onchange="fetchSubjects(this)">
-                <option value="--select--" selected hidden>--select--</option>
-            </select>
-            <select name="" id="subject" class="subject-select" onchange="fetchChapters(this)">
-                <option value="--select--" selected hidden>--select--</option>
+            <div class="category-select-container select-container">
+                <label class="select-label">Category</label>
+                <select name="" id="category" class="category-select" onchange="fetchSubjects(this)">
+                    <option value="--select--" selected hidden>--select--</option>
+                </select>
+            </div>
+            <div class="subject-select-container select-container">
+                <label class="select-label">Subject</label>
+                <select name="" id="subject" class="subject-select" onchange="fetchChapters(this)">
+                    <option value="--select--" selected hidden>--select--</option>
 
-            </select>
-            <select name="" id="chapter" class="chapter-select" onchange="fetchTopics(this)">
-                <option value="--select--" selected hidden>--select--</option>
+                </select>
+            </div>
+            <div class="chapter-select-container select-container">
+                <label class="select-label">Chapter</label>
 
-            </select>
-            <select name="" id="topic" class="topic-select" onchange="fetchSubtopics(this)">
-                <option value="--select--" selected hidden>--select--</option>
+                <select name="" id="chapter" class="chapter-select" onchange="fetchTopics(this)">
+                    <option value="--select--" selected hidden>--select--</option>
 
-            </select>
-            <select name="" id="subtopic" class="subtopic-select" onchange="saveState(this)">
-                <option value="--select--" selected hidden>--select--</option>
+                </select>
+            </div>
+            <div class="topic-select-container select-container">
+                <label class="select-label">Topic</label>
 
-            </select>
+                <select name="" id="topic" class="topic-select" onchange="fetchSubtopics(this)">
+                    <option value="--select--" selected hidden>--select--</option>
+
+                </select>
+            </div>
+            <div class="subtopic-select-container select-container">
+                <label class="select-label">Subtopic</label>
+
+                <select name="" id="subtopic" class="subtopic-select" onchange="saveState(this)">
+                    <option value="--select--" selected hidden>--select--</option>
+
+                </select>
+            </div>
+
             <button class="small delete-row-button">Delete Row</button>
         </div>
         <div class="request-row hidden">
             <div class="values" style="width:60%;">
                 <span class="request-owner"></span>
                 <span class="request-email"></span>
-                <span class="request-type"></span>
+                <span class="request-type" style="color:#953f00;"></span>
+                <span class="request-name" style="color:#953f00;"></span>
                 <span class="request-category"></span>
                 <span class="request-subject"></span>
                 <span class="request-chapter"></span>
                 <span class="request-topic"></span>
-                <span class="request-name"></span>
             </div>
             <button class="small approve-request-button" onclick="actRequest(this,'approved')">Approve</button>
             <button class="small reject-request-button" onclick="actRequest(this,'rejected')">Reject</button>
@@ -321,6 +365,7 @@
     </div>
 </body>
 <script>
+    const qbgBaseURL = `https://qbg-backend-stage.penpencil.co`
     function fetchReq(url) {
         return new Promise((resolve, reject) => {
             fetch(`https://www.api-pw-internal-utilities.in/qbgtags?url=${encodeURI(url)}`).then(response => {
@@ -480,7 +525,7 @@
         })
     }
     let fetchedData = {};
-    fetchReq("https://qbg-backend-stage.penpencil.co/category-configuration").then(response => {
+    fetchReq(`${qbgBaseURL}/category-configuration`).then(response => {
 
         categories = response.data;
 
@@ -498,7 +543,7 @@
     });
     function fetchSubjects(el) {
         saveState(el);
-        let rowNumber = el.parentElement.getAttribute('number');
+        let rowNumber = el.parentElement.parentElement.getAttribute('number');
         let categoryId = el.selectedOptions[0].id;
         let select = document.querySelector(`.row[number="${rowNumber}"]`).querySelector(".subject-select");
         resetDropdowns(rowNumber, ["subject", "chapter", "topic", "subtopic"])
@@ -510,7 +555,7 @@
             select.innerHTML = html;
             return;
         }
-        fetchReq(`https://qbg-backend-stage.penpencil.co/subjects/v2?category_id=${categoryId}`).then(res => {
+        fetchReq(`${qbgBaseURL}/subjects/v2?category_id=${categoryId}`).then(res => {
 
             fetchedData[categoryId] = res.data
             res.data.forEach(subject => {
@@ -522,7 +567,8 @@
     }
     function fetchChapters(el) {
         saveState(el);
-        let rowNumber = el.parentElement.getAttribute('number');
+        let rowNumber = el.parentElement.parentElement.getAttribute('number');
+
         let subjectId = el.selectedOptions[0].id;
         let select = document.querySelector(`.row[number="${rowNumber}"]`).querySelector(".chapter-select");
         resetDropdowns(rowNumber, ["chapter", "topic", "subtopic"])
@@ -534,7 +580,7 @@
             select.innerHTML = html;
             return;
         }
-        fetchReq(`https://qbg-backend-stage.penpencil.co/chapters/v2?subject_id=${subjectId}`).then(res => {
+        fetchReq(`${qbgBaseURL}/chapters/v2?subject_id=${subjectId}`).then(res => {
 
 
             fetchedData[subjectId] = res.data
@@ -547,7 +593,8 @@
     }
     function fetchTopics(el) {
         saveState(el);
-        let rowNumber = el.parentElement.getAttribute('number');
+        let rowNumber = el.parentElement.parentElement.getAttribute('number');
+
         let chapterId = el.selectedOptions[0].id;
         let select = document.querySelector(`.row[number="${rowNumber}"]`).querySelector(".topic-select");
         resetDropdowns(rowNumber, ["topic", "subtopic"])
@@ -560,7 +607,7 @@
             select.innerHTML = html;
             return;
         }
-        fetchReq(`https://qbg-backend-stage.penpencil.co/topics/v2?chapter_id=${chapterId}`).then(res => {
+        fetchReq(`${qbgBaseURL}/topics/v2?chapter_id=${chapterId}`).then(res => {
 
 
             fetchedData[chapterId] = res.data
@@ -573,7 +620,8 @@
     }
     function fetchSubtopics(el) {
         saveState(el);
-        let rowNumber = el.parentElement.getAttribute('number');
+        let rowNumber = el.parentElement.parentElement.getAttribute('number');
+
         let topicId = el.selectedOptions[0].id;
         let select = document.querySelector(`.row[number="${rowNumber}"]`).querySelector(".subtopic-select");
         resetDropdowns(rowNumber, ["subtopic"])
@@ -585,7 +633,7 @@
             select.innerHTML = html;
             return;
         }
-        fetchReq(`https://qbg-backend-stage.penpencil.co/topics/v2?topic_id=${topicId}`).then(res => {
+        fetchReq(`${qbgBaseURL}/topics/v2?topic_id=${topicId}`).then(res => {
 
 
             fetchedData[topicId] = res.data
@@ -670,7 +718,7 @@
         }
         let id = document.querySelector(".requestwindow").querySelector(`.${parent}`).selectedOptions[0].id;
         let html = `<option value="--Select ${type}--" selected hidden>${placeholder}</option>`;
-        fetchReq(`https://qbg-backend-stage.penpencil.co/${type}s/v2?${parent}_id=${id}`).then(res => {
+        fetchReq(`${qbgBaseURL}/${type}s/v2?${parent}_id=${id}`).then(res => {
 
             res.data.forEach(el => {
                 html += `<option value="${el.english_name}" id="${el.unique_id}">${el.english_name}</option>`
@@ -721,10 +769,16 @@
             })
         })
     }
+    let compare = (a, b) => (a.status ? 1 : 0 > b.status ? 1 : 0) ? 1 : ((b.status ? 1 : 0 > a.status ? 1 : 0) ? -1 : 0)
     function renderRequests() {
+        let approved = 0, rejected = 0, pending = 0
         document.querySelectorAll(".request-row-visible").forEach(el => {
             el.remove()
-        })
+        });
+        document.querySelectorAll(".row-tagging").forEach(el => {
+            el.remove()
+        });
+        requests.sort(compare)
         requests.forEach(el => {
             let keys = Object.keys(el);
             keys.forEach(key => {
@@ -753,15 +807,23 @@
             newRow.querySelector('.request-chapter').innerHTML = `Parent Chapter: ${el.chname}`;
             newRow.querySelector('.request-topic').innerHTML = `Parent Topic: ${el.topicname}`;
             if (el.status == "approved") {
+                approved++;
                 approveButton.innerHTML = `Approved`;
                 rejectButton.remove();
                 approveButton.classList.add('request-approved');
-
+                newRow.classList.add('acted')
             } else if (el.status == "rejected") {
+                rejected++
                 rejectButton.innerHTML = `rejected`;
                 approveButton.remove();
                 rejectButton.classList.add('request-rejected');
+                newRow.classList.add('acted')
+
+            } else {
+                pending++;
             }
+            document.querySelector(".request-count").classList.remove('hidden')
+            document.querySelector(".request-count").innerHTML = `Approved: ${approved}; Rejected: ${rejected}; Pending: ${pending}`
         })
     }
     function actRequest(el, status) {
@@ -778,7 +840,7 @@
         }).then(res => {
             res.json().then(json => {
                 fetchRequests()
-                console.log(json)
+                // console.log(json)
             })
         })
     }
