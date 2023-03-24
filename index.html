@@ -633,7 +633,7 @@
             select.innerHTML = html;
             return;
         }
-        fetchReq(`${qbgBaseURL}/topics/v2?topic_id=${topicId}`).then(res => {
+        fetchReq(`${qbgBaseURL}/subtopics/v2?topic_id=${topicId}`).then(res => {
 
 
             fetchedData[topicId] = res.data
