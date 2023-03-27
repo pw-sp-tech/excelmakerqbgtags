@@ -310,13 +310,13 @@
             <span class="row-number">SN: 1</span>
             <div class="category-select-container select-container">
                 <label class="select-label">Category</label>
-                <select name="" id="category" class="category-select" onchange="fetchSubjects(this)">
+                <select name="" id="category" class="category-select" onchange="fetchSubjects(this)" disabled>
                     <option value="--select--" selected hidden>--select--</option>
                 </select>
             </div>
             <div class="subject-select-container select-container">
                 <label class="select-label">Subject</label>
-                <select name="" id="subject" class="subject-select" onchange="fetchChapters(this)">
+                <select name="" id="subject" class="subject-select" onchange="fetchChapters(this)" disabled>
                     <option value="--select--" selected hidden>--select--</option>
 
                 </select>
@@ -324,7 +324,7 @@
             <div class="chapter-select-container select-container">
                 <label class="select-label">Chapter</label>
 
-                <select name="" id="chapter" class="chapter-select" onchange="fetchTopics(this)">
+                <select name="" id="chapter" class="chapter-select" onchange="fetchTopics(this)" disabled>
                     <option value="--select--" selected hidden>--select--</option>
 
                 </select>
@@ -332,7 +332,7 @@
             <div class="topic-select-container select-container">
                 <label class="select-label">Topic</label>
 
-                <select name="" id="topic" class="topic-select" onchange="fetchSubtopics(this)">
+                <select name="" id="topic" class="topic-select" onchange="fetchSubtopics(this)" disabled>
                     <option value="--select--" selected hidden>--select--</option>
 
                 </select>
@@ -340,7 +340,7 @@
             <div class="subtopic-select-container select-container">
                 <label class="select-label">Subtopic</label>
 
-                <select name="" id="subtopic" class="subtopic-select" onchange="saveState(this)">
+                <select name="" id="subtopic" class="subtopic-select" onchange="saveState(this)" disabled>
                     <option value="--select--" selected hidden>--select--</option>
 
                 </select>
@@ -365,10 +365,12 @@
     </div>
 </body>
 <script>
-    const qbgBaseURL = `https://qbg-backend-stage.penpencil.co`
+    const qbgBaseURL = `https://qbg-api.penpencil.co`;
+    const backendBaseURL = `https://www.api-pw-internal-utilities.in`
+    // const backendBaseURL = `http://localhost:8080`
     function fetchReq(url) {
         return new Promise((resolve, reject) => {
-            fetch(`https://www.api-pw-internal-utilities.in/qbgtags?url=${encodeURI(url)}`).then(response => {
+            fetch(`${backendBaseURL}/qbgtags?url=${encodeURI(url)}`).then(response => {
 
                 response.json().then(json => {
 
@@ -511,7 +513,7 @@
             dropdownValues.push([select.selectedOptions[0].id, select.selectedOptions[0].value])
         })
         let name = requestNameEl.value;
-        fetch(`https://www.api-pw-internal-utilities.in/qbgtags/submitrequest`, {
+        fetch(`${backendBaseURL}/qbgtags/submitrequest`, {
             headers: {
                 "content-type": "application/json"
             },
@@ -536,6 +538,7 @@
             html2 += `<option value="${cat.name}" id="${cat.unique_id}">${cat.name}</option>`;
         });
         document.querySelectorAll(".category-select").forEach(el => {
+            el.removeAttribute('disabled');
             el.innerHTML = html;
         });
         document.querySelector(".requestwindow").querySelector(".category").innerHTML = html2;
@@ -546,7 +549,9 @@
         let rowNumber = el.parentElement.parentElement.getAttribute('number');
         let categoryId = el.selectedOptions[0].id;
         let select = document.querySelector(`.row[number="${rowNumber}"]`).querySelector(".subject-select");
+        console.log(select.querySelector('option'))
         resetDropdowns(rowNumber, ["subject", "chapter", "topic", "subtopic"])
+        select.querySelector('option').innerHTML = `Loading...`;
         let html = `<option value="--select--" selected hidden>--select--</option>`;
         if (fetchedData[categoryId]) {
             fetchedData[categoryId].forEach(el => {
@@ -564,6 +569,7 @@
                 html += `<option value="${subject.english_name}" id="${subject.unique_id}">${subject.english_name}</option>`
             });
             select.innerHTML = html;
+            select.removeAttribute('disabled');
 
         })
     }
@@ -573,7 +579,9 @@
 
         let subjectId = el.selectedOptions[0].id;
         let select = document.querySelector(`.row[number="${rowNumber}"]`).querySelector(".chapter-select");
+
         resetDropdowns(rowNumber, ["chapter", "topic", "subtopic"])
+        select.querySelector('option').innerHTML = `Loading...`;
         let html = `<option value="--select--" selected hidden>--select--</option>`;
         if (fetchedData[subjectId]) {
             fetchedData[subjectId].forEach(el => {
@@ -592,6 +600,7 @@
                 html += `<option value="${ch.english_name}" id="${ch.unique_id}">${ch.english_name}</option>`
             });
             select.innerHTML = html;
+            select.removeAttribute('disabled');
 
         })
     }
@@ -601,7 +610,9 @@
 
         let chapterId = el.selectedOptions[0].id;
         let select = document.querySelector(`.row[number="${rowNumber}"]`).querySelector(".topic-select");
+
         resetDropdowns(rowNumber, ["topic", "subtopic"])
+        select.querySelector('option').innerHTML = `Loading...`;
 
         let html = `<option value="--select--" selected hidden>--select--</option>`;
         if (fetchedData[chapterId]) {
@@ -621,16 +632,20 @@
                 html += `<option value="${topic.english_name}" id="${topic.unique_id}">${topic.english_name}</option>`
             });
             select.innerHTML = html;
+            select.removeAttribute('disabled');
 
         })
     }
     function fetchSubtopics(el) {
+
         saveState(el);
         let rowNumber = el.parentElement.parentElement.getAttribute('number');
 
         let topicId = el.selectedOptions[0].id;
         let select = document.querySelector(`.row[number="${rowNumber}"]`).querySelector(".subtopic-select");
+
         resetDropdowns(rowNumber, ["subtopic"])
+        select.querySelector('option').innerHTML = `Loading...`;
         let html = `<option value="--select--" selected hidden>--select--</option>`;
         if (fetchedData[topicId]) {
             fetchedData[topicId].forEach(subtopic => {
@@ -649,6 +664,7 @@
                 html += `<option value="${subtopic.english_name}" id="${subtopic.unique_id}">${subtopic.english_name}</option>`
             });
             select.innerHTML = html;
+            select.removeAttribute('disabled');
 
         })
     }
@@ -742,7 +758,7 @@
         let username = document.querySelector(".admin-login-username-value").value;
         let password = document.querySelector(".admin-login-password-value").value;
         el.innerHTML = "LOGGING IN..."
-        fetch(`https://www.api-pw-internal-utilities.in/qbgtags/login`, {
+        fetch(`${backendBaseURL}/qbgtags/login`, {
             method: "POST",
             headers: {
                 "content-type": "application/json"
@@ -770,7 +786,7 @@
     let requests = [];
     function fetchRequests() {
         closeAdminLoginWindow()
-        fetch(`https://www.api-pw-internal-utilities.in/qbgtags/requests`).then(res => {
+        fetch(`${backendBaseURL}/qbgtags/requests`).then(res => {
             res.json().then(json => {
                 requests = json.data;
                 renderRequests()
@@ -838,7 +854,7 @@
     function actRequest(el, status) {
         let requestId = el.getAttribute('row-id');
         el.innerHTML = `please wait...`
-        fetch(`https://www.api-pw-internal-utilities.in/qbgtags/actonrequest`, {
+        fetch(`${backendBaseURL}/qbgtags/actonrequest`, {
             method: "POST",
             headers: {
                 "content-type": "application/json"
