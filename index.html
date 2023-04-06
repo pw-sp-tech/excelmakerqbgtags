@@ -247,10 +247,42 @@
             color: white;
             font-size: 20px;
         }
+
+        #filename-box {
+            width: 40%;
+            color: #ffffff;
+            padding: 5px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #filename-inactive {
+            color: white;
+        }
+
+        #filename-active {
+            color: black;
+            font-size: 18px;
+            margin: 0;
+            border-radius: 20px;
+            padding: 0px 5px;
+        }
+
+        .header-buttons {
+            width: 60%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+
+        .filename {
+            font-size: 22px;
+        }
     </style>
 </head>
 
-<body style="margin: 0;padding: 0;background-color: rgb(53, 53, 53);">
+<body style="margin: 0;padding: 0;background-color: rgb(53, 53, 53);min-height: 100vh;">
     <div class="overlay hidden"></div>
     <div class="ground" style="min-width: 100vw;">
         <div class="requestwindow hidden">
@@ -299,12 +331,19 @@
         </div>
         <div class="header"
             style="height: fit-content;padding: 10px;display: flex;align-items:flex-start;justify-content: flex-end;background-color: rgb(80, 80, 80);width: 95%;border-radius: 50px;">
-            <span class="request-count hidden">15</span>
-            <button class="login-button" onclick="adminLogin()">Admin Login</button>
-            <button class="logout-button hidden" onclick="logout()">Log out</button>
-            <button class="request-tag-button non-admin-button" onclick="requestNewTag()">Request New Tag</button>
-            <button class="export-button non-admin-button" onclick="exportasexcel()">Export</button>
-            <button class="add-row-button non-admin-button" onclick="addrow()">+Add Row</button>
+            <span class="request-count hidden"></span>
+            <div id="filename-box">
+                <span class="filename" id="filename-inactive" onclick="activeFileName(event)">Untitled Tag Sheet</span>
+                <input class="filename hidden" type="text" id="filename-active">
+            </div>
+            <div class="header-buttons">
+                <button class="login-button" onclick="adminLogin()">Admin Login</button>
+                <button class="logout-button hidden" onclick="logout()">Log out</button>
+                <button class="request-tag-button non-admin-button" onclick="requestNewTag()">Request New Tag</button>
+                <button class="export-button non-admin-button" onclick="exportasexcel()">Export</button>
+                <button class="add-row-button non-admin-button" onclick="addrow()">+Add Row</button>
+            </div>
+
         </div>
         <div class="row hidden">
             <span class="row-number">SN: 1</span>
@@ -425,7 +464,7 @@
             worksheet = XLSX.utils.aoa_to_sheet(data);
         workbook.SheetNames.push("Sheet1");
         workbook.Sheets["Sheet1"] = worksheet;
-        XLSX.writeFile(workbook, "tagging.xlsx");
+        XLSX.writeFile(workbook, `${document.querySelector("#filename-inactive").innerHTML}.xlsx`);
     }
     function deleteRow(rowNumber) {
         document.querySelector(`.row[number="${rowNumber}"]`).remove();
@@ -544,10 +583,12 @@
         document.querySelector(".requestwindow").querySelector(".category").innerHTML = html2;
 
     });
+    let categoryIdCurrentRow;
     function fetchSubjects(el) {
         saveState(el);
         let rowNumber = el.parentElement.parentElement.getAttribute('number');
         let categoryId = el.selectedOptions[0].id;
+        categoryIdCurrentRow = categoryId;
         let select = document.querySelector(`.row[number="${rowNumber}"]`).querySelector(".subject-select");
         console.log(select.querySelector('option'))
         resetDropdowns(rowNumber, ["subject", "chapter", "topic", "subtopic"])
@@ -590,7 +631,7 @@
             select.innerHTML = html;
             return;
         }
-        fetchReq(`${qbgBaseURL}/chapters/v2?subject_id=${subjectId}`).then(res => {
+        fetchReq(`${qbgBaseURL}/chapters/v2?subject_id=${subjectId}&category_id=${categoryIdCurrentRow}`).then(res => {
 
 
             fetchedData[subjectId] = res.data;
@@ -622,7 +663,7 @@
             select.innerHTML = html;
             return;
         }
-        fetchReq(`${qbgBaseURL}/topics/v2?chapter_id=${chapterId}`).then(res => {
+        fetchReq(`${qbgBaseURL}/topics/v2?chapter_id=${chapterId}&category_id=${categoryIdCurrentRow}`).then(res => {
 
 
             fetchedData[chapterId] = res.data;
@@ -654,7 +695,7 @@
             select.innerHTML = html;
             return;
         }
-        fetchReq(`${qbgBaseURL}/subtopics/v2?topic_id=${topicId}`).then(res => {
+        fetchReq(`${qbgBaseURL}/subtopics/v2?topic_id=${topicId}&category_id=${categoryIdCurrentRow}`).then(res => {
 
 
             fetchedData[topicId] = res.data;
@@ -872,6 +913,30 @@
     function logout() {
         window.location.reload()
     }
+    const fileNameInactive = document.querySelector("#filename-inactive");
+    const fileNameActive = document.querySelector("#filename-active");
+    function activeFileName(event) {
+        event.stopPropagation()
+        let filename = fileNameInactive.innerHTML;
+        fileNameInactive.classList.add("hidden")
+        fileNameActive.value = filename;
+        fileNameActive.classList.remove("hidden");
+    }
+    fileNameActive.addEventListener('click', (event) => {
+        event.stopPropagation()
+    })
+    document.body.addEventListener('click', () => {
+
+        let filename = fileNameActive.value;
+        console.log(filename.length)
+        if (filename.length > 30) {
+            filename = filename.substring(0, 30) + "..."
+            console.log(filename)
+        }
+        fileNameInactive.innerHTML = filename;
+        fileNameActive.classList.add("hidden");
+        fileNameInactive.classList.remove("hidden");
+    })
 </script>
 
 </html>
