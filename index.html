@@ -213,7 +213,7 @@
         }
 
         .hidden {
-            display: none;
+            display: none !important;
         }
 
         button.request-approved {
@@ -250,6 +250,7 @@
 
         #filename-box {
             width: 40%;
+            min-width: 10px;
             color: #ffffff;
             padding: 5px 20px;
             position: relative;
@@ -258,14 +259,21 @@
 
         #filename-inactive {
             color: white;
+            min-width: 37px;
+            min-height: 10px;
+            cursor: text;
+            /* height: 62px; */
+            display: block;
         }
 
         #filename-active {
+            outline: none;
             color: black;
             font-size: 18px;
             margin: 0;
             border-radius: 20px;
             padding: 0px 5px;
+
         }
 
         .header-buttons {
@@ -278,6 +286,18 @@
 
         .filename {
             font-size: 22px;
+        }
+
+        .filename-extension {
+            background-color: #027402;
+            border-radius: 6px;
+            padding: 0 5px;
+            margin-left: 3px;
+        }
+
+        .button-disabled {
+            opacity: 0.5 !important;
+            pointer-events: none !important;
         }
     </style>
 </head>
@@ -333,8 +353,10 @@
             style="height: fit-content;padding: 10px;display: flex;align-items:flex-start;justify-content: flex-end;background-color: rgb(80, 80, 80);width: 95%;border-radius: 50px;">
             <span class="request-count hidden"></span>
             <div id="filename-box">
-                <span class="filename" id="filename-inactive" onclick="activeFileName(event)">Untitled Tag Sheet</span>
-                <input class="filename hidden" type="text" id="filename-active">
+                <span class="filename" id="filename-inactive" onclick="activeFileName(event)">Untitled Tag Sheet<span
+                        class="filename-extension">.XLSX</span></span>
+                <input class="filename hidden" placeholder="type file name..." type="text"
+                    oninput="fileNameChange(this)" id="filename-active">
             </div>
             <div class="header-buttons">
                 <button class="login-button" onclick="adminLogin()">Admin Login</button>
@@ -590,7 +612,7 @@
         let categoryId = el.selectedOptions[0].id;
         categoryIdCurrentRow = categoryId;
         let select = document.querySelector(`.row[number="${rowNumber}"]`).querySelector(".subject-select");
-        console.log(select.querySelector('option'))
+        // console.log(select.querySelector('option'))
         resetDropdowns(rowNumber, ["subject", "chapter", "topic", "subtopic"])
         select.querySelector('option').innerHTML = `Loading...`;
         let html = `<option value="--select--" selected hidden>--select--</option>`;
@@ -915,9 +937,14 @@
     }
     const fileNameInactive = document.querySelector("#filename-inactive");
     const fileNameActive = document.querySelector("#filename-active");
+    let fileNameSaved = localStorage.getItem('filename') || "Untitled Tag Sheet";
+    if (fileNameSaved.length > 30) {
+        fileNameSaved = fileNameSaved.substring(0, 30) + "..."
+    }
+    fileNameInactive.innerHTML = `${fileNameSaved}<span class="filename-extension">.XLSX</span>`;
     function activeFileName(event) {
         event.stopPropagation()
-        let filename = fileNameInactive.innerHTML;
+        let filename = fileNameInactive.innerText.replace(".XLSX", "");
         fileNameInactive.classList.add("hidden")
         fileNameActive.value = filename;
         fileNameActive.classList.remove("hidden");
@@ -928,15 +955,29 @@
     document.body.addEventListener('click', () => {
 
         let filename = fileNameActive.value;
-        console.log(filename.length)
+        localStorage.setItem('filename', filename)
         if (filename.length > 30) {
             filename = filename.substring(0, 30) + "..."
-            console.log(filename)
+            // console.log(filename)
+        } else if (filename.length == 0) {
+            return;
         }
-        fileNameInactive.innerHTML = filename;
+        fileNameInactive.innerHTML = `${filename}<span class="filename-extension">.XLSX</span>`;
         fileNameActive.classList.add("hidden");
         fileNameInactive.classList.remove("hidden");
     })
+
+    function fileNameChange(el) {
+        // console.log(el.value)
+        if (el.value.length == 0) {
+            document.querySelector(".export-button").classList.add("button-disabled");
+            el.style.outline = '1px solid red';
+            return;
+        }
+        document.querySelector(".export-button").classList.remove("button-disabled");
+        el.style.outline = 'none';
+
+    }
 </script>
 
 </html>
