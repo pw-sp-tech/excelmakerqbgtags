@@ -33,9 +33,9 @@
             cursor: pointer;
             background: #0d0d0d;
             overflow: hidden;
-            transition: 0.6s;
+            transition: 0.25s;
             color: #ffffff;
-            border-color: #206592;
+            border-color: #00efffa8;
             padding: 5px 10px;
         }
 
@@ -70,8 +70,8 @@
         }
 
         button:hover {
-            color: #f2f2f2;
-            background: #206592;
+            color: #ffffff;
+            background: #003c96;
         }
 
 
@@ -269,11 +269,15 @@
 
         #filename-active {
             outline: none;
-            color: black;
+
             font-size: 18px;
             margin: 0;
-            border-radius: 20px;
+            border-radius: 5px;
+            background-color: rgb(67, 67, 67);
             padding: 0px 5px;
+            color: white;
+            border: none;
+            border-bottom: 2px solid #00eeff;
 
         }
 
@@ -290,7 +294,7 @@
         }
 
         .filename-extension {
-            background-color: #027402;
+            background-color: #00747d;
             border-radius: 6px;
             padding: 0 5px;
             margin-left: 3px;
@@ -659,10 +663,14 @@
     function closeRequestWindow() {
         overlay.classList.add("hidden")
         requestWindow.classList.add("hidden")
+        noRowTextBox.classList.remove("hidden");
+        filenameBox.classList.remove("hidden")
     }
     function closeAdminLoginWindow() {
         overlay.classList.add("hidden")
         adminLoginWindowEl.classList.add("hidden")
+        noRowTextBox.classList.remove("hidden");
+        filenameBox.classList.remove("hidden")
     }
     function submitRequestedTags(el) {
 
@@ -1052,7 +1060,7 @@
     function activeFileName(event) {
         event.stopPropagation()
         let filename = fileNameInactive.innerText.replace(".XLSX", "");
-        fileNameInactive.classList.add("hidden")
+        fileNameInactive.classList.add("hidden");
         fileNameActive.value = filename;
         fileNameActive.classList.remove("hidden");
     }
@@ -1078,11 +1086,11 @@
         // console.log(el.value)
         if (el.value.length == 0) {
             exportButton.classList.add("button-disabled");
-            el.style.outline = '1px solid red';
+            el.style.borderBottom = '2px solid red';
             return;
         }
         exportButton.classList.remove("button-disabled");
-        el.style.outline = 'none';
+        el.style.borderBottom = '2px solid #00eeff';
 
     }
 </script>
