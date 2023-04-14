@@ -854,7 +854,9 @@
         }
     }
     window.onbeforeunload = function () {
-        return "Data will be lost if you refresh the page, are you sure?";
+        if (rows > 0) {
+            return "Data will be lost if you refresh the page, are you sure?";
+        }
     };
 
     function requestTypeSelected(el) {
