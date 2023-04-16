@@ -16,6 +16,7 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Poppins', sans-serif;
+            user-select: none;
         }
 
         button {
@@ -373,6 +374,64 @@
             fill: rgb(0, 255, 238);
             transition: all 0.2s ease-in-out;
         }
+
+        .add-row-footer {
+            background-color: black;
+            color: white;
+            font-size: 15px;
+            height: fit-content;
+            padding: 5px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            width: 95%;
+            margin-top: 5px;
+        }
+
+        .add-row-input {
+            width: 60px;
+            outline: none;
+            color: white;
+            background-color: rgb(67, 67, 67);
+            border: none;
+            border-bottom: 2px solid #00eeff;
+
+            margin: 0;
+        }
+
+        .footer-button {
+            margin: 0 10px;
+            padding: 2px 10px;
+            cursor: pointer;
+            border-radius: 15px;
+            color: #00eeff;
+            transition: background-color 0.15s ease-in-out;
+        }
+
+        .footer-button:hover {
+            background-color: #003c96;
+        }
+
+        .footer-section {
+            border: 2px solid #00eeff59;
+            padding: 3px 10px;
+            min-width: 150px;
+            min-height: 45px;
+            margin: 3px 7px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        #add-row-section-demo {
+            pointer-events: none;
+            width: 205px;
+            font-size: 15px;
+            display: inline-flex;
+            transform: translate(-3px, -6px);
+        }
     </style>
 </head>
 
@@ -440,17 +499,6 @@
             </div>
 
         </div>
-        <div class="no-row-text-box">
-            <span class="no-row-text">
-                Add row by clicking
-                <button class="add-row-button-demo demo-button non-admin-button">+Add Row</button> button to
-                start tagging.
-            </span>
-            <span class="no-row-text">
-                Export rows by clicking
-                <button class="add-row-button-demo demo-button non-admin-button">Export</button> button.
-            </span>
-        </div>
         <div class="row hidden" style="opacity: 0;">
             <span class="row-number">SN: 1</span>
             <div class="category-select-container select-container">
@@ -497,6 +545,39 @@
                 </path>
             </svg>
         </div>
+        <div class="add-row-footer">
+            <div class="add-row-section footer-section">
+                <span class="add-row-text"><span class="add-row-button-2 footer-button"
+                        onclick="addRowMulti()">Add</span> <input class="add-row-input" type="text"> Rows</span>
+            </div>
+            <div class="export-button-section button-disabled footer-section">
+                <span class="export-button-2 footer-button" onclick="exportasexcel()">Export</span>
+                <span class="export-rows-count-2"></span>
+            </div>
+            <div class="clear-all-section button-disabled footer-section">
+                <span class="clear-all-button footer-button" onclick="clearAll(this)">Clear All</span>
+                <span style="cursor: pointer;" class="close-undo hidden" onclick="closeUndo()">&#10060;</span>
+            </div>
+        </div>
+        <div class="no-row-text-box">
+            <span class="no-row-text">
+                Add row by clicking
+                <button class="add-row-button-demo demo-button non-admin-button">+Add Row</button> button to
+                start tagging.
+            </span>
+            <span class="no-row-text">
+                Export rows by clicking
+                <button class="add-row-button-demo demo-button non-admin-button">Export</button> button.
+            </span>
+            <span class="no-row-text">
+                Use <div class="add-row-section footer-section" id="add-row-section-demo">
+                    <span class="add-row-text"><span class="add-row-button-2 footer-button"
+                            onclick="addRowMulti()">Add</span> <input class="add-row-input add-row-input-demo"
+                            type="text"> Rows</span>
+                </div> to add multiple rows with single click.
+            </span>
+        </div>
+
         <div class="request-row hidden">
             <div class="values" style="width:60%;">
                 <span class="request-owner"></span>
@@ -511,9 +592,11 @@
             <button class="small approve-request-button" onclick="actRequest(this,'approved')">Approve</button>
             <button class="small reject-request-button" onclick="actRequest(this,'rejected')">Reject</button>
         </div>
+
     </div>
 </body>
 <script>
+
     const qbgBaseURL = `https://qbg-api.penpencil.co`;
     const backendBaseURL = `https://www.api-pw-internal-utilities.in`
     // const backendBaseURL = `http://localhost:8080`
@@ -531,25 +614,38 @@
     let rows = 0;
     const row = document.querySelector('.row');
     const ground = document.querySelector('.ground');
+    const footer = document.querySelector(".add-row-footer");
+
     const noRowTextBox = document.querySelector(".no-row-text-box");
     const exportButton = document.querySelector(".export-button");
+    const exportButtonSection = document.querySelector(".export-button-section");
+    const clearAllButtonSection = document.querySelector(".clear-all-section");
+    const exportButton2RowCount = document.querySelector(".export-rows-count-2");
     const addRowButton = document.querySelector(".add-row-button");
-    exportButton.classList.add("button-disabled")
+    exportButton.classList.add("button-disabled");
+    exportButtonSection.classList.add("button-disabled");
+    clearAllButtonSection.classList.add("button-disabled");
+
+    const addRowInput = document.querySelector(".add-row-input");
+    addRowInput.value = localStorage.getItem('add_row_input_value') || 10;
+
     function addrow(selectedValues) {
         noRowTextBox.classList.add("hidden");
         rows++;
         exportButton.innerHTML = `Export (${rows} ${rows > 1 ? "Rows" : "Row"})`
+        exportButton2RowCount.innerHTML = `${rows} ${rows > 1 ? "Rows" : "Row"}`
         let rowAll = document.querySelectorAll(".row");
         exportButton.classList.remove("button-disabled");
+        exportButtonSection.classList.remove("button-disabled");
+        clearAllButtonSection.classList.remove("button-disabled");
         let dataLastRow = [];
         if (selectedValues) {
             dataLastRow = selectedValues
         } else {
-            rowAll[rowAll.length - 1].querySelectorAll("select").forEach(select => {
-                dataLastRow.push(select.selectedOptions[0].value);
+            rowAll[rowAll.length == 1 ? 0 : rowAll.length - 2].querySelectorAll("select").forEach(select => {
+                dataLastRow.push(select.selectedOptions[0].value || "--select--");
             });
         }
-
         let newRow;
         if (rowAll.length > 1) {
             newRow = rowAll[rowAll.length - 1].cloneNode(true);
@@ -557,7 +653,7 @@
             newRow = row.cloneNode(true);
         }
 
-        ground.appendChild(newRow);
+        ground.insertBefore(newRow, row);
         newRow.classList.remove('hidden');
         newRow.classList.add('row-tagging');
         newRow.querySelector(".row-number").innerHTML = `SN: ${rows}`;
@@ -567,13 +663,35 @@
         let count = -1;
         newRow.querySelectorAll("select").forEach(select => {
             count++;
+            select.value = dataLastRow[count];
             if (dataLastRow[count] != "--select--") {
-                select.value = dataLastRow[count];
+                if (select.classList.contains("category-select")) {
+                    fetchSubjects(select)
+                }
+                else if (select.classList.contains("subject-select")) {
+                    fetchChapters(select)
+                }
+                else if (select.classList.contains("chapter-select")) {
+                    fetchTopics(select)
+                }
+                else if (select.classList.contains("topic-select")) {
+                    fetchSubtopics(select)
+                }
             }
         })
         setTimeout(() => {
             newRow.style.opacity = "1";
         }, 100);
+    }
+    function addRowMulti() {
+        let numRows = parseInt(addRowInput.value);
+        if (!numRows) {
+            return
+        }
+        for (let x = 0; x < numRows; x++) {
+            addrow()
+        }
+
     }
     let data = [["subject", "chapter", "topic", "subtopic"]];
     function exportasexcel() {
@@ -595,10 +713,14 @@
 
         if (rows == 0) {
             exportButton.innerHTML = `Export`
+            exportButton2RowCount.innerHTML = ``
             noRowTextBox.classList.remove("hidden");
             exportButton.classList.add("button-disabled");
+            exportButtonSection.classList.add("button-disabled");
+            clearAllButtonSection.classList.add("button-disabled");
         } else {
             exportButton.innerHTML = `Export (${rows} ${rows > 1 ? "Rows" : "Row"})`
+            exportButton2RowCount.innerHTML = `Export (${rows} ${rows > 1 ? "Rows" : "Row"})`
         }
         let count = 0;
         document.querySelectorAll('.row-tagging').forEach(el => {
@@ -617,8 +739,7 @@
 
     }
     function saveState() {
-        return;
-        localStorage.setItem('data', JSON.stringify(getDataAsObject()))
+        localStorage.setItem('data', JSON.stringify(getDataAsObject()));
     }
     function getDataAsObject(excludeCategory, id) {
         let data = []
@@ -727,7 +848,6 @@
         let categoryId = el.selectedOptions[0].id;
         categoryIdCurrentRow = categoryId;
         let select = document.querySelector(`.row[number="${rowNumber}"]`).querySelector(".subject-select");
-        // console.log(select.querySelector('option'))
         resetDropdowns(rowNumber, ["subject", "chapter", "topic", "subtopic"])
         select.querySelector('option').innerHTML = `Loading...`;
         let html = `<option value="--select--" selected hidden>--select--</option>`;
@@ -736,6 +856,7 @@
                 html += `<option value="${el.english_name}" id="${el.unique_id}">${el.english_name}</option>`
             });
             select.innerHTML = html;
+            select.removeAttribute('disabled');
             return;
         }
         fetchReq(`${qbgBaseURL}/subjects/v2?category_id=${categoryId}`).then(res => {
@@ -766,6 +887,7 @@
                 html += `<option value="${el.english_name}" id="${el.unique_id}">${el.english_name}</option>`
             });
             select.innerHTML = html;
+            select.removeAttribute('disabled');
             return;
         }
         fetchReq(`${qbgBaseURL}/chapters/v2?subject_id=${subjectId}&category_id=${categoryIdCurrentRow}`).then(res => {
@@ -798,6 +920,7 @@
                 html += `<option value="${el.english_name}" id="${el.unique_id}">${el.english_name}</option>`
             });
             select.innerHTML = html;
+            select.removeAttribute('disabled');
             return;
         }
         fetchReq(`${qbgBaseURL}/topics/v2?chapter_id=${chapterId}&category_id=${categoryIdCurrentRow}`).then(res => {
@@ -830,6 +953,7 @@
                 html += `<option value="${subtopic.english_name}" id="${subtopic.unique_id}">${subtopic.english_name}</option>`
             });
             select.innerHTML = html;
+            select.removeAttribute('disabled');
             return;
         }
         fetchReq(`${qbgBaseURL}/subtopics/v2?topic_id=${topicId}&category_id=${categoryIdCurrentRow}`).then(res => {
@@ -1045,7 +1169,6 @@
         }).then(res => {
             res.json().then(json => {
                 fetchRequests()
-                // console.log(json)
             })
         })
     }
@@ -1075,7 +1198,6 @@
         localStorage.setItem('filename', filename)
         if (filename.length > 30) {
             filename = filename.substring(0, 30) + "..."
-            // console.log(filename)
         } else if (filename.length == 0) {
             return;
         }
@@ -1085,15 +1207,77 @@
     })
 
     function fileNameChange(el) {
-        // console.log(el.value)
         if (el.value.length == 0) {
             exportButton.classList.add("button-disabled");
+            exportButtonSection.classList.add("button-disabled");
+            clearAllButtonSection.classList.add("button-disabled");
             el.style.borderBottom = '2px solid red';
             return;
         }
         exportButton.classList.remove("button-disabled");
+        exportButtonSection.classList.remove("button-disabled");
+        clearAllButtonSection.classList.remove("button-disabled");
         el.style.borderBottom = '2px solid #00eeff';
 
+    }
+    let undoHistory = [];
+    let undoTime = 60;
+    let undoActive = 0;
+    let undoInterval;
+    function clearAll(el) {
+        if (undoActive == 1) {
+            return;
+        }
+        undoHistory = [];
+        let rows = document.querySelectorAll(".row.row-tagging");
+        let count = rows.length;
+        rows.forEach(row => {
+            let rowData = [];
+            row.querySelectorAll('select').forEach(select => {
+                let val = select.selectedOptions[0].value;
+                rowData.push(val)
+            });
+            undoHistory.push(rowData)
+        });
+        rows.forEach(row => {
+            deleteRow(row.getAttribute("number"))
+        });
+        document.querySelector(".clear-all-section").classList.remove("button-disabled");
+        document.querySelector(".clear-all-button").removeAttribute("onclick");
+        el.innerHTML = `Cleared ${count} ${count == 1 ? "Row" : "Rows"} <span class="footer-button undo-button" onclick="undoLastClear()">Undo(${undoTime})</span>`;
+        el.classList.remove("footer-button");
+        document.querySelector(".close-undo").classList.remove("hidden");
+        undoActive = 1;
+        undoInterval = setInterval(() => {
+            undoTime--;
+            document.querySelector(".undo-button").innerHTML = `Undo(${undoTime})`;
+            if (undoTime == 0) {
+                el.innerHTML = `Clear All`
+                el.classList.add("footer-button");
+                closeUndo()
+            }
+        }, 1000);
+    }
+    function undoLastClear() {
+        undoHistory.forEach(row => {
+            addrow(row)
+        });
+        setTimeout(() => {
+            closeUndo()
+        }, 100);
+    }
+    function closeUndo() {
+        undoActive = 0;
+        undoTime = 60;
+        if (rows == 0) {
+            document.querySelector(".clear-all-section").classList.add("button-disabled")
+        }
+        document.querySelector(".close-undo").classList.add("hidden");
+        document.querySelector(".clear-all-button").innerHTML = `Clear All`
+        document.querySelector(".clear-all-button").classList.add("footer-button");
+        document.querySelector(".clear-all-button").setAttribute("onclick", "clearAll(this)");
+
+        clearInterval(undoInterval);
     }
 </script>
 
