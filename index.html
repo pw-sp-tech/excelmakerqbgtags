@@ -578,12 +578,13 @@
     let data = [["subject", "chapter", "topic", "subtopic"]];
     function exportasexcel() {
         let dataObject = getDataAsObject(true, true);
-        data = [["subject", "chapter", "topic", "subtopic"]];
+        let dataCurrent = [["subject", "chapter", "topic", "subtopic"]];
         dataObject.forEach(row => {
             data.push(row)
+            dataCurrent.push(row)
         })
         var workbook = XLSX.utils.book_new(),
-            worksheet = XLSX.utils.aoa_to_sheet(data);
+            worksheet = XLSX.utils.aoa_to_sheet(dataCurrent);
         workbook.SheetNames.push("Sheet1");
         workbook.Sheets["Sheet1"] = worksheet;
         XLSX.writeFile(workbook, `${document.querySelector("#filename-inactive").innerHTML}.xlsx`);
