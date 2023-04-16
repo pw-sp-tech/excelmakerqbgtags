@@ -578,6 +578,7 @@
     let data = [["subject", "chapter", "topic", "subtopic"]];
     function exportasexcel() {
         let dataObject = getDataAsObject(true, true);
+        data = [["subject", "chapter", "topic", "subtopic"]];
         dataObject.forEach(row => {
             data.push(row)
         })
