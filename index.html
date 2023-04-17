@@ -554,8 +554,8 @@
         <div class="add-row-footer">
             <div class="add-row-section footer-section">
                 <span class="add-row-text"><span class="add-row-button-2 footer-button"
-                        onclick="addRowMulti()">Add</span> <input oninput="onInputAddRow(this)" class="add-row-input"
-                        type="text"> Rows</span>
+                        onclick="addRowMulti(this)">Add</span> <input oninput="onInputAddRow(this)"
+                        class="add-row-input" type="text"> Rows</span>
             </div>
             <div class="export-button-section button-disabled footer-section">
                 <span class="export-button-2 footer-button" onclick="exportasexcel()">Export</span>
@@ -701,10 +701,10 @@
             newRow.style.opacity = "1";
         }, 100);
     }
-    function addRowMulti() {
+    function addRowMulti(el) {
         let numRows = parseInt(addRowInput.value);
-        if (!numRows) {
-            showFooterError(`Oops... please enter a number.`)
+        if (!numRows || numRows <= 0) {
+            showFooterError(`Oops... please enter a valid number.`)
             return;
         }
 
@@ -715,7 +715,7 @@
         for (let x = 0; x < numRows; x++) {
             addrow()
         }
-
+        el.scrollIntoView({ behavior: "smooth" })
     }
     let data = [["subject", "chapter", "topic", "subtopic"]];
     function exportasexcel() {
@@ -1105,6 +1105,7 @@
                     document.querySelectorAll('.non-admin-button').forEach(el => {
                         el.remove()
                     });
+
                     loginButton.classList.add('hidden')
                     logoutButton.classList.remove('hidden')
                     fetchRequests()
@@ -1117,7 +1118,8 @@
     const requestRowDefault = document.querySelector('.request-row');
     let requests = [];
     function fetchRequests() {
-        closeAdminLoginWindow()
+        closeAdminLoginWindow();
+
         fetch(`${backendBaseURL}/qbgtags/requests`).then(res => {
             res.json().then(json => {
                 requests = json.data;
@@ -1128,11 +1130,14 @@
     let compare2 = (a, b) => (a.status ? 1 : 0 > b.status ? 1 : 0) ? 1 : ((b.status ? 1 : 0 > a.status ? 1 : 0) ? -1 : 0);
     let compare = (a, b) => (a.english_name.charCodeAt(0) > b.english_name.charCodeAt(0)) ? 1 : ((b.english_name.charCodeAt(0) > a.english_name.charCodeAt(0)) ? -1 : 0);
     function renderRequests() {
+        document.querySelectorAll('.row-tagging').forEach(el => {
+            deleteRow(el.getAttribute("number"))
+        });
+        filenameBox.classList.add("hidden");
+        noRowTextBox.classList.add("hidden");
+        footer.classList.add("hidden")
         let approved = 0, rejected = 0, pending = 0
         document.querySelectorAll(".request-row-visible").forEach(el => {
-            el.remove()
-        });
-        document.querySelectorAll(".row-tagging").forEach(el => {
             el.remove()
         });
         requests.sort(compare2)
@@ -1272,7 +1277,7 @@
         });
         document.querySelector(".clear-all-section").classList.remove("button-disabled");
         document.querySelector(".clear-all-button").removeAttribute("onclick");
-        el.innerHTML = `Cleared ${count} ${count == 1 ? "Row" : "Rows"} <span class="footer-button undo-button" onclick="undoLastClear()">Undo(${undoTime})</span>`;
+        el.innerHTML = `Cleared ${count} ${count == 1 ? "Row" : "Rows"} <span class="footer-button undo-button" onclick="undoLastClear(this)">Undo(${undoTime})</span>`;
         el.classList.remove("footer-button");
         document.querySelector(".close-undo").classList.remove("hidden");
         undoActive = 1;
@@ -1286,12 +1291,14 @@
             }
         }, 1000);
     }
-    function undoLastClear() {
+    function undoLastClear(el) {
         undoHistory.forEach(row => {
             addrow(row)
         });
+        el.scrollIntoView({ behavior: "smooth" })
         setTimeout(() => {
-            closeUndo()
+            closeUndo();
+
         }, 100);
     }
     function closeUndo() {
@@ -1319,8 +1326,8 @@
         }, 10000);
     }
     function onInputAddRow(el) {
-        if (!parseInt(el.value)) {
-            showFooterError(`Oops... please enter a number.`)
+        if (!parseInt(el.value) || parseInt(el.value) <= 0) {
+            showFooterError(`Oops... please enter a valid number.`)
         } else if (parseInt(el.value) + rows > 500) {
             showFooterError(`Maximum 500 rows allowed for smooth performance.`)
         } else {
