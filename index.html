@@ -360,6 +360,8 @@
             justify-content: flex-end;
             background-color: rgb(80, 80, 80);
             width: 95%;
+            /* position: sticky;
+            top: 0; */
             /* border-radius: 50px; */
         }
 
@@ -431,6 +433,10 @@
             font-size: 15px;
             display: inline-flex;
             transform: translate(-3px, -6px);
+        }
+
+        .error-text-footer {
+            margin-left: 10px;
         }
     </style>
 </head>
@@ -548,7 +554,8 @@
         <div class="add-row-footer">
             <div class="add-row-section footer-section">
                 <span class="add-row-text"><span class="add-row-button-2 footer-button"
-                        onclick="addRowMulti()">Add</span> <input class="add-row-input" type="text"> Rows</span>
+                        onclick="addRowMulti()">Add</span> <input oninput="onInputAddRow(this)" class="add-row-input"
+                        type="text"> Rows</span>
             </div>
             <div class="export-button-section button-disabled footer-section">
                 <span class="export-button-2 footer-button" onclick="exportasexcel()">Export</span>
@@ -558,6 +565,7 @@
                 <span class="clear-all-button footer-button" onclick="clearAll(this)">Clear All</span>
                 <span style="cursor: pointer;" class="close-undo hidden" onclick="closeUndo()">&#10060;</span>
             </div>
+            <span class="error-text-footer hidden">Oops... please enter a number.</span>
         </div>
         <div class="no-row-text-box">
             <span class="no-row-text">
@@ -622,6 +630,7 @@
     const clearAllButtonSection = document.querySelector(".clear-all-section");
     const exportButton2RowCount = document.querySelector(".export-rows-count-2");
     const addRowButton = document.querySelector(".add-row-button");
+    const errorTextFooter = document.querySelector(".error-text-footer")
     exportButton.classList.add("button-disabled");
     exportButtonSection.classList.add("button-disabled");
     clearAllButtonSection.classList.add("button-disabled");
@@ -630,8 +639,17 @@
     addRowInput.value = localStorage.getItem('add_row_input_value') || 10;
 
     function addrow(selectedValues) {
+        if (rows >= 500) {
+            showFooterError(`Maximum 500 rows allowed for smooth performance.`)
+            return;
+        }
         noRowTextBox.classList.add("hidden");
         rows++;
+        if (rows >= 500 || rows == 0) {
+            addRowButton.classList.add("button-disabled");
+        } else {
+            addRowButton.classList.remove("button-disabled");
+        }
         exportButton.innerHTML = `Export (${rows} ${rows > 1 ? "Rows" : "Row"})`
         exportButton2RowCount.innerHTML = `${rows} ${rows > 1 ? "Rows" : "Row"}`
         let rowAll = document.querySelectorAll(".row");
@@ -686,7 +704,13 @@
     function addRowMulti() {
         let numRows = parseInt(addRowInput.value);
         if (!numRows) {
-            return
+            showFooterError(`Oops... please enter a number.`)
+            return;
+        }
+
+        if (rows + numRows > 500) {
+            showFooterError(`Maximum 500 rows allowed for smooth performance.`);
+            return;
         }
         for (let x = 0; x < numRows; x++) {
             addrow()
@@ -710,7 +734,11 @@
     function deleteRow(rowNumber) {
         document.querySelector(`.row[number="${rowNumber}"]`).remove();
         rows--;
-
+        if (rows >= 500 || rows == 0) {
+            addRowButton.classList.add("button-disabled")
+        } else {
+            addRowButton.classList.remove("button-disabled");
+        }
         if (rows == 0) {
             exportButton.innerHTML = `Export`
             exportButton2RowCount.innerHTML = ``
@@ -1278,6 +1306,37 @@
         document.querySelector(".clear-all-button").setAttribute("onclick", "clearAll(this)");
 
         clearInterval(undoInterval);
+    }
+    function showFooterError(text) {
+        errorTextFooter.classList.remove("hidden");
+        errorTextFooter.innerHTML = text;
+        let id = makeid(10);
+        errorTextFooter.setAttribute('uid', id)
+        setTimeout(() => {
+            if (errorTextFooter.getAttribute('uid') == id) {
+                errorTextFooter.classList.add("hidden");
+            }
+        }, 10000);
+    }
+    function onInputAddRow(el) {
+        if (!parseInt(el.value)) {
+            showFooterError(`Oops... please enter a number.`)
+        } else if (parseInt(el.value) + rows > 500) {
+            showFooterError(`Maximum 500 rows allowed for smooth performance.`)
+        } else {
+            errorTextFooter.classList.add("hidden");
+        }
+    }
+    function makeid(length) {
+        let result = '';
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const charactersLength = characters.length;
+        let counter = 0;
+        while (counter < length) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            counter += 1;
+        }
+        return result;
     }
 </script>
 
