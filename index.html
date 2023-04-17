@@ -1247,11 +1247,12 @@
             el.style.borderBottom = '2px solid red';
             return;
         }
-        exportButton.classList.remove("button-disabled");
-        exportButtonSection.classList.remove("button-disabled");
-        clearAllButtonSection.classList.remove("button-disabled");
+        if (rows > 0) {
+            exportButton.classList.remove("button-disabled");
+            exportButtonSection.classList.remove("button-disabled");
+            clearAllButtonSection.classList.remove("button-disabled");
+        }
         el.style.borderBottom = '2px solid #00eeff';
-
     }
     let undoHistory = [];
     let undoTime = 60;
@@ -1327,11 +1328,14 @@
     }
     function onInputAddRow(el) {
         if (!parseInt(el.value) || parseInt(el.value) <= 0) {
-            showFooterError(`Oops... please enter a valid number.`)
+            showFooterError(`Oops... please enter a valid number.`);
+            el.style.borderBottom = '2px solid red';
         } else if (parseInt(el.value) + rows > 500) {
-            showFooterError(`Maximum 500 rows allowed for smooth performance.`)
+            showFooterError(`Maximum 500 rows allowed for smooth performance.`);
+            el.style.borderBottom = '2px solid red';
         } else {
             errorTextFooter.classList.add("hidden");
+            el.style.borderBottom = '2px solid #00eeff';
         }
     }
     function makeid(length) {
