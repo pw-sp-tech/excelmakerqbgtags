@@ -645,7 +645,7 @@
         }
         noRowTextBox.classList.add("hidden");
         rows++;
-        if (rows >= 500 || rows == 0) {
+        if (rows >= 500) {
             addRowButton.classList.add("button-disabled");
         } else {
             addRowButton.classList.remove("button-disabled");
@@ -734,7 +734,7 @@
     function deleteRow(rowNumber) {
         document.querySelector(`.row[number="${rowNumber}"]`).remove();
         rows--;
-        if (rows >= 500 || rows == 0) {
+        if (rows >= 500) {
             addRowButton.classList.add("button-disabled")
         } else {
             addRowButton.classList.remove("button-disabled");
@@ -843,7 +843,7 @@
                 "content-type": "application/json"
             },
             method: "POST",
-            body: JSON.stringify([type, name, owner, email, dropdownValues])
+            body: JSON.stringify([type, name, owner, email, 'production', dropdownValues])
         }).then(res => {
             res.json().then(json => {
                 el.innerHTML = `Submit`;
@@ -1120,7 +1120,7 @@
     function fetchRequests() {
         closeAdminLoginWindow();
 
-        fetch(`${backendBaseURL}/qbgtags/requests`).then(res => {
+        fetch(`${backendBaseURL}/qbgtags/requests?env=production`).then(res => {
             res.json().then(json => {
                 requests = json.data;
                 renderRequests()
@@ -1293,6 +1293,9 @@
         }, 1000);
     }
     function undoLastClear(el) {
+        document.querySelectorAll(".row.row-tagging").forEach(row => {
+            deleteRow(row.getAttribute("number"))
+        });
         undoHistory.forEach(row => {
             addrow(row)
         });
