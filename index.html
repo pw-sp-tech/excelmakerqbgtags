@@ -7,8 +7,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QBG Tags Excel Maker</title>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"
+        integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <script src="https://kit.fontawesome.com/2e507ab521.js" crossorigin="anonymous"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600&display=swap');
 
@@ -152,7 +156,7 @@
         }
 
         select {
-            margin: 10px;
+            margin: 5px 10px;
             min-width: 10%;
             max-width: 200px;
             padding: 5px 10px;
@@ -176,7 +180,31 @@
             z-index: 999;
         }
 
+        .history-window {
+            background-color: rgb(80, 80, 80);
+            position: absolute;
+            width: 90%;
+            color: white;
+            text-align: center;
+            transform: translateY(100px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 10px 20px;
+            border-radius: 10px;
+            z-index: 999;
+        }
+
         .request-window-header {
+            padding: 10px;
+            margin: 20px;
+            background-color: rgb(53, 53, 53);
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        .history-window-header {
             padding: 10px;
             margin: 20px;
             background-color: rgb(53, 53, 53);
@@ -248,10 +276,52 @@
             font-size: 11px;
         }
 
-        .select-label {
+        .label-and-quick-actions {
+            color: white;
+            font-size: 12px;
+            padding: 0;
+            margin: 0;
+            position: relative;
+            top: 0;
+            left: 7px;
+            cursor: pointer;
+        }
+
+        .tooltip {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-40%, -50%);
+            background-color: #6c6c6c;
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease-in-out;
+            /* width: fit-content; */
+            font-weight: bolder;
+            z-index: 9999;
+        }
+
+        .copy-below-action:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .select-label-icon {
             color: white;
             font-size: 12px;
             position: absolute;
+            transform: translate(10px, -10px);
+        }
+
+        .quick-action {
+            color: white;
+            font-size: 12px;
+            position: absolute;
+
             transform: translate(10px, -10px);
         }
 
@@ -602,6 +672,30 @@
             color: white;
             font-size: 20px;
         }
+
+        .history-collection {
+            background-color: rgb(53, 53, 53);
+            padding: 10px;
+            border-radius: 10px;
+            width: 95%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .history-row {
+            margin: 10px 0;
+            width: 60%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .exported-excel-name {
+            width: 50%;
+        }
     </style>
 </head>
 
@@ -643,6 +737,14 @@
                 <button onclick="closeRequestWindow()">Close</button>
             </div>
         </div>
+        <div class="history-window hidden">
+            <span class="history-window-header">Export History</span>
+            <div class="history-collection">
+            </div>
+            <div>
+                <button onclick="closeHistoryWindow()">Close</button>
+            </div>
+        </div>
         <div class="admin-login-window hidden">
             <span class="admin-login-window-header">Please enter login details</span>
             <div class="login-inputs">
@@ -667,6 +769,16 @@
                             </label>
                         </div>
                     </div>
+                    <div class="setting-toggle">
+                        <span class="setting-name">Include Tag Names</span>
+                        <div class="toggle">
+                            <input type="checkbox" class="tag-name-switch" id="b" onchange="includeTagNameFn(this)" />
+                            <label for="b">
+                                <span class="sr-only">Toggle Switch</span>
+                            </label>
+                        </div>
+                    </div>
+
                 </div>
             </div>
             <span class="request-count hidden"></span>
@@ -682,6 +794,8 @@
                 <button class="logout-button hidden" onclick="logout()">Log out</button>
                 <button class="request-tag-button non-admin-button" onclick="requestNewTag()">Request New Tag</button>
                 <button class="export-button non-admin-button" onclick="exportasexcel()">Export</button>
+                <button class="exported-history-button non-admin-button" onclick="openHistoryWindow()">Show
+                    History</button>
                 <button class="add-row-button non-admin-button" onclick="addrow()">+Add Row</button>
             </div>
             <div class="enabled-tags">
@@ -692,20 +806,41 @@
         <div class="row hidden" style="opacity: 0;">
             <span class="row-number">SN: 1</span>
             <div class="category-select-container select-container">
-                <label class="select-label">Category</label>
+                <div class="label-and-quick-actions">
+                    <label class="select-label">Category</label>
+                    <i class="fa-solid fa-copy quick-action-icon copy-below-action"
+                        onclick="copyBelow(this, 'category-select')">
+                        <span class="tooltip">
+                            Copy current dropdown value to the rows below
+                        </span>
+                    </i>
+                </div>
+
                 <select name="" id="category" class="category-select" onchange="fetchSubjects(this)" disabled>
                     <option value="--select--" selected hidden>--select--</option>
                 </select>
             </div>
             <div class="subject-select-container select-container">
-                <label class="select-label">Subject</label>
+                <div class="label-and-quick-actions">
+                    <label class="select-label">Subject</label>
+                    <i class="fa-solid fa-copy quick-action-icon copy-below-action"
+                        onclick="copyBelow(this, 'subject-select')"><span class="tooltip">
+                            Copy current dropdown value to the rows below
+                        </span></i>
+                </div>
                 <select name="" id="subject" class="subject-select" onchange="fetchChapters(this)" disabled>
                     <option value="--select--" selected hidden>--select--</option>
 
                 </select>
             </div>
             <div class="chapter-select-container select-container">
-                <label class="select-label">Chapter</label>
+                <div class="label-and-quick-actions">
+                    <label class="select-label">Chapter</label>
+                    <i class="fa-solid fa-copy quick-action-icon copy-below-action"
+                        onclick="copyBelow(this, 'chapter-select')"><span class="tooltip">
+                            Copy current dropdown value to the rows below
+                        </span></i>
+                </div>
 
                 <select name="" id="chapter" class="chapter-select" onchange="fetchTopics(this)" disabled>
                     <option value="--select--" selected hidden>--select--</option>
@@ -713,7 +848,13 @@
                 </select>
             </div>
             <div class="topic-select-container select-container">
-                <label class="select-label">Topic</label>
+                <div class="label-and-quick-actions">
+                    <label class="select-label">Topic</label>
+                    <i class="fa-solid fa-copy quick-action-icon copy-below-action"
+                        onclick="copyBelow(this, 'topic-select')"><span class="tooltip">
+                            Copy current dropdown value to the rows below
+                        </span></i>
+                </div>
 
                 <select name="" id="topic" class="topic-select" onchange="fetchSubtopics(this)" disabled>
                     <option value="--select--" selected hidden>--select--</option>
@@ -721,7 +862,13 @@
                 </select>
             </div>
             <div class="subtopic-select-container select-container">
-                <label class="select-label">Subtopic</label>
+                <div class="label-and-quick-actions">
+                    <label class="select-label">Subtopic</label>
+                    <i class="fa-solid fa-copy quick-action-icon copy-below-action"
+                        onclick="copyBelow(this, 'subtopic-select')"><span class="tooltip">
+                            Copy current dropdown value to the rows below
+                        </span></i>
+                </div>
 
                 <select name="" id="subtopic" class="subtopic-select" onchange="saveState(this)" disabled>
                     <option value="--select--" selected hidden>--select--</option>
@@ -729,7 +876,13 @@
                 </select>
             </div>
             <div class="diff-select-container select-container">
-                <label class="select-label">Difficulty</label>
+                <div class="label-and-quick-actions">
+                    <label class="select-label">Difficulty</label>
+                    <i class="fa-solid fa-copy quick-action-icon copy-below-action"
+                        onclick="copyBelow(this, 'difficulty-select')"><span class="tooltip">
+                            Copy current dropdown value to the rows below
+                        </span></i>
+                </div>
 
                 <select name="" id="difficulty" class="difficulty-select" onchange="saveState(this)">
                     <option value="--select--" selected hidden>--select--</option>
@@ -794,13 +947,10 @@
             <button class="small approve-request-button" onclick="actRequest(this,'approved')">Approve</button>
             <button class="small reject-request-button" onclick="actRequest(this,'rejected')">Reject</button>
         </div>
-
     </div>
 </body>
 <script>
-//     window.location.href = '/excelmakerqbgtags-stage'
-    // document.querySelector(".overlay").classList.remove('hidden');
-    // document.querySelector(".overlay").innerHTML = '<span style="font-size:60px;top:150px;left:20%;position:absolute;">shutdown for maintenance</span>';
+    // window.location.href = '/excelmakerqbgtags-stage'
     const env = 'production';
     const qbgBaseURL = env == 'stage' ? `https://qbg-backend-stage.penpencil.co` : `https://qbg-api.penpencil.co`;
     const backendBaseURL = `https://www.api-pw-internal-utilities.in`
@@ -925,6 +1075,9 @@
                 return;
             }
             labels.push(name)
+            if (localStorage.getItem('include-tag-name')) {
+                labels.push(`${name}_name`)
+            }
         })
         let dataCurrent = [labels];
         dataObject.forEach(row => {
@@ -935,7 +1088,16 @@
             worksheet = XLSX.utils.aoa_to_sheet(dataCurrent);
         workbook.SheetNames.push("Sheet1");
         workbook.Sheets["Sheet1"] = worksheet;
-        XLSX.writeFile(workbook, `${document.querySelector("#filename-inactive").innerHTML}.xlsx`);
+        XLSX.writeFile(workbook, `${document.querySelector("#filename-inactive").innerText.replace('.XLSX', '')}.xlsx`);
+        const exportHistorySaved = JSON.parse(localStorage.getItem('export-history') || JSON.stringify([]));
+        exportHistorySaved.push({
+            name: document.querySelector("#filename-inactive").innerText.replace('.XLSX', ''),
+            exported_at: new Date().toDateString(),
+            data: dataCurrent,
+            uid: generateRandomId()
+        });
+        exportHistorySaved.length < 10 || exportHistorySaved.shift();
+        localStorage.setItem('export-history', JSON.stringify(exportHistorySaved))
     }
     function deleteRow(rowNumber) {
         document.querySelector(`.row[number="${rowNumber}"]`).remove();
@@ -989,9 +1151,10 @@
                     return;
                 }
                 let selectedOption = id ? select.selectedOptions[0].id : select.selectedOptions[0].value;
-                console.log(selectedOption)
                 rowData.push(selectedOption)
-
+                if (localStorage.getItem('include-tag-name')) {
+                    rowData.push(select.selectedOptions[0].innerText)
+                }
             });
             data.push(rowData)
         });
@@ -1070,7 +1233,7 @@
         let html = `<option value="--select--" selected hidden>--select--</option>`;
         let html2 = `<option value="--select--" selected hidden>--Select Category--</option>`;
         categories.forEach(cat => {
-            html += `<option value="${cat.name}" id="${cat.unique_id}">${cat.name}</option>`;
+            html += `<option value="${cat.name}" data-select2-id="${cat.name}" id="${cat.unique_id}">${cat.name}</option>`;
             html2 += `<option value="${cat.name}" id="${cat.unique_id}">${cat.name}</option>`;
         });
         document.querySelectorAll(".category-select").forEach(el => {
@@ -1078,7 +1241,7 @@
             el.innerHTML = html;
         });
         document.querySelector(".requestwindow").querySelector(".category").innerHTML = html2;
-
+        $('.searchable').prop('disabled', false);
     });
     let categoryIdCurrentRow;
     function fetchSubjects(el) {
@@ -1594,6 +1757,110 @@
             window.location.reload()
         }, delay);
     }
+    function includeTagNameFn(el) {
+        localStorage.setItem('include-tag-name', el.checked)
+    }
+    function openHistoryWindow() {
+        overlay.classList.remove("hidden")
+        document.querySelector('.history-window').classList.remove('hidden');
+        renderHistory()
+    }
+    function renderHistory() {
+        const historyCollectionEl = document.querySelector('.history-collection')
+        const savedHistory = JSON.parse(localStorage.getItem('export-history') || JSON.stringify([]));
+        let html = savedHistory.length > 0 ? '' : '<span>Your exported sheets will be available for viewing in this section.</span>'
+        savedHistory.forEach(history => {
+            const name = history.name;
+            const data = history.data;
+            const uid = history.uid;
+            html += `<div class="history-row">
+                    <span class="exported-excel-name">${name}</span>
+                    <button class="export-history-excel-button" onclick="exportHistoryExcel('${uid}','${name}')">Export</button>
+                </div>`
+        });
+        historyCollectionEl.innerHTML = html;
+    }
+    function generateRandomId() {
+        const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        let id = '';
+
+        for (let i = 0; i < 25; i++) {
+            const randomIndex = Math.floor(Math.random() * characters.length);
+            id += characters[randomIndex];
+        }
+
+        return id;
+    }
+    function exportHistoryExcel(uid, name) {
+        console.log(uid)
+        console.log(name)
+        const savedHistory = JSON.parse(localStorage.getItem('export-history'));
+        if (!savedHistory) { return; }
+
+        const historyData = savedHistory.filter(ele => ele.uid == uid)
+        console.log(historyData)
+
+        var workbook = XLSX.utils.book_new(),
+            worksheet = XLSX.utils.aoa_to_sheet(historyData[0].data);
+        workbook.SheetNames.push("Sheet1");
+        workbook.Sheets["Sheet1"] = worksheet;
+        XLSX.writeFile(workbook, name + ".xlsx");
+    }
+
+    function closeHistoryWindow() {
+        overlay.classList.add("hidden")
+        document.querySelector('.history-window').classList.add('hidden');
+    }
+    // function copyBelow(element, selectClass) {
+    //     var rowElement = element.closest('.row');
+    //     console.log(rowElement)
+    //     var rowNumber = rowElement.getAttribute('number');
+    //     var selectElement = rowElement.querySelector('.' + selectClass);
+    //     var selectedValue = selectElement.innerHTML;
+
+    //     var rowsBelow = Array.from(rowElement.parentElement.querySelectorAll('.row.row-tagging'))
+    //         .slice(rowNumber);
+
+    //     for (var i = 0; i < rowsBelow.length; i++) {
+    //         var rowBelow = rowsBelow[i];
+    //         var selectBelow = rowBelow.querySelector('.' + selectClass);
+    //         selectBelow.innerHTML = selectedValue;
+    //         selectBelow.value = selectElement.value;
+    //         selectBelow.dispatchEvent(new Event('change'));
+    //     }
+    // }
+    function copyBelow(element, selectClass) {
+        var rowElement = element.closest('.row');
+        var rowNumber = rowElement.getAttribute('number');
+        var selectElement = rowElement.querySelector('.' + selectClass);
+        var selectedValue = selectElement.innerHTML;
+
+        var selectElements = rowElement.querySelectorAll('select');
+        var selectValues = Array.from(selectElements).map(function (select) {
+            return select.value;
+        });
+
+        var rowsBelow = Array.from(rowElement.parentElement.querySelectorAll('.row.row-tagging'))
+            .slice(rowNumber);
+
+        for (var i = 0; i < rowsBelow.length; i++) {
+            var rowBelow = rowsBelow[i];
+            var selectBelow = rowBelow.querySelector('.' + selectClass);
+
+            for (var j = 0; j < selectElements.length; j++) {
+                selectBelow = rowBelow.querySelector('.' + selectElements[j].classList[0]);
+                selectBelow.innerHTML = selectElements[j].innerHTML;
+                selectBelow.value = selectValues[j];
+                selectBelow.dispatchEvent(new Event('change'));
+
+                if (selectElements[j] === selectElement) {
+                    break; // Stop copying if reaching the current dropdown
+                }
+            }
+        }
+    }
+
+
 </script>
 
 </html>
